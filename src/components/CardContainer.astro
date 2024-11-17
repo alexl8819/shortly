@@ -1,0 +1,21 @@
+---
+import Card from './Card.astro';
+
+interface CardInformation {
+	title: string;
+	description: string;
+}
+
+interface Props {
+	cards: Array<CardInformation>;
+}
+
+const { cards } = Astro.props;
+---
+
+<ol class="link-card">
+	{ cards.map((cardInfo: CardInformation) => <Card title={cardInfo.title} description={cardInfo.description} />) }
+</ol>
+<style>
+	
+</style>

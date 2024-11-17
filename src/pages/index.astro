@@ -1,0 +1,54 @@
+---
+import { Image, getImage } from 'astro:assets';
+
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import ShortenerWidget from '../components/Shortener.tsx';
+import CardContainer from '../components/CardContainer.astro';
+
+import workerIllustration from '../assets/illustration-working.svg';
+import bgShorten from '../assets/bg-shorten-mobile.svg';
+
+const shortenBgImg = await getImage({ src: bgShorten, format: 'webp' });
+---
+
+<Layout title="Main - Landing page">
+	<Header links={[{label: 'Features', url: 'features'}, { label: 'Pricing', url: 'pricing' }, { label: 'Resources', url: 'resources' }]} />
+	<main class="mx-6">
+		<section class="text-center">
+			<Image class="m-[4.188rem]" src={workerIllustration} alt="worker illustration on landing page" loading="lazy" />
+			<h2 class="mt-[3.75rem] text-[2.625rem] leading-[3rem] tracking-[-0.066em] font-bold text-very-dark-blue">More than just shorter links</h2>
+  			<p class="mt-[0.938rem] text-lg leading-[1.875rem] tracking-[0.008em] text-grayish-violet font-medium">Build your brand’s recognition and get detailed insights on how your links are performing.</p>
+  			<button class="mt-8 py-3 px-8 rounded-full bg-cyan text-white font-bold text-[1.25rem]">Get Started</button>
+  		</section>
+		<section class="mt-[5.5rem] p-6 bg-dark-violet rounded-lg bg-no-repeat bg-right-top" style=`background-image: url(${shortenBgImg.src})`>
+			<ShortenerWidget />
+		</section>
+		<section class="mt-20 text-center">
+			<div>
+				<h2 class="leading-[3rem] tracking-[-0.044em] font-bold text-[1.75rem] text-very-dark-blue">Advanced Statistics</h2>
+  				<p class="mt-4 font-medium leading-7 text-base text-grayish-violet">Track how your links are performing across the web with our advanced statistics dashboard.</p>
+			</div>
+			<CardContainer cards={[
+				{
+					title: 'Brand Recognition',
+					description: 'Boost your brand recognition with each click. Generic links don\’t mean a thing. Branded links help instil confidence in your content.'
+				},
+				{
+					title: 'Detailed Records',
+					description: 'Gain insights into who is clicking your links. Knowing when and where people engage with your content helps inform better decisions.'
+				},
+				{
+					title: 'Fully Customizable',
+					description: 'Improve brand awareness and content discoverability through customizable links, supercharging audience engagement.'
+				}
+			]} />
+		</section>
+	</main>
+	<Footer />
+</Layout>
+
+<style>
+	
+</style>
