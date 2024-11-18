@@ -8,6 +8,7 @@ export default {
 			},
 			colors: {
 				'very-dark-blue': 'hsl(255, 11%, 22%)',
+				'very-dark-violet': 'hsl(260, 8%, 14%)',
 				'grayish-violet': 'hsl(257, 7%, 63%)',
 				'dark-violet': 'hsl(257, 27%, 26%)',
 				'cyan': 'hsl(180, 66%, 49%)',
