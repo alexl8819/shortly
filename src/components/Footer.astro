@@ -1,34 +1,35 @@
 ---
 import { Image } from 'astro:assets';
 
-const { links } = Astro.props;
+import logo from '../assets/logo.svg';
+
+interface Link {
+  label: string,
+  url: string
+}
+
+interface DirectoryListing {
+  section: string,
+  links: Array<Link>
+}
+
+const { directory } = Astro.props;
 const baseURL = import.meta.env.BASE_URL;
 
 ---
-<footer class="mt-6 mx-6 flex justify-start">
-  <!--
-  Boost your links today
+<footer class="mt-6 flex flex-col justify-start w-full">
+  <div class="bg-dark-violet text-center px-6 py-12">
+    <h2 class="leading-[3rem] tracking-[-0.044em] font-bold text-[1.75rem] text-white">Boost your links today</h2>
+    <button class="mt-4 bg-cyan text-white rounded-full py-3 px-8">Get Started</button>
+  </div>
+  <div>
+    <Image src={logo} alt="main site logo in footer" />
+    {
+      directory.map((listing: DirectoryListing) => {
 
-  Get Started
-
-  Features
-
-  Link Shortening
-  Branded Links
-  Analytics
-
-  Resources
-
-  Blog
-  Developers
-  Support
-
-  Company
-
-  About
-  Our Team
-  Careers
-  Contact-->
+      })
+    }
+  </div>
 </footer>
 <style>
   
