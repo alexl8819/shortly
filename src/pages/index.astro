@@ -14,7 +14,11 @@ const shortenBgImg = await getImage({ src: bgShorten, format: 'webp' });
 ---
 
 <Layout title="Main - Landing page">
-	<Header links={[{label: 'Features', url: 'features'}, { label: 'Pricing', url: 'pricing' }, { label: 'Resources', url: 'resources' }]} />
+	<Header links={[
+		{ label: 'Features', url: 'features' }, 
+		{ label: 'Pricing', url: 'pricing' }, 
+		{ label: 'Resources', url: 'resources' }
+	]} />
 	<main class="mx-6">
 		<section class="text-center">
 			<Image class="m-[4.188rem]" src={workerIllustration} alt="worker illustration on landing page" loading="lazy" />
@@ -33,20 +37,52 @@ const shortenBgImg = await getImage({ src: bgShorten, format: 'webp' });
 			<CardContainer cards={[
 				{
 					title: 'Brand Recognition',
+					icon: 'brand-recognition',
+					alt: 'Icon represents Brand Recognition',
 					description: 'Boost your brand recognition with each click. Generic links don\’t mean a thing. Branded links help instil confidence in your content.'
 				},
 				{
 					title: 'Detailed Records',
+					icon: 'detailed-records',
+					alt: 'Icon represents gaining insights',
 					description: 'Gain insights into who is clicking your links. Knowing when and where people engage with your content helps inform better decisions.'
 				},
 				{
 					title: 'Fully Customizable',
+					icon: 'fully-customizable',
+					alt: 'Icon represents being fully customizable',
 					description: 'Improve brand awareness and content discoverability through customizable links, supercharging audience engagement.'
 				}
 			]} />
 		</section>
 	</main>
-	<Footer />
+	<Footer directory={[
+		{ 
+			section: 'Features',
+			links: [
+				{ label: 'Link Shortening', url: 'shorten' },
+				{ label: 'Branded Links', url: 'branded' },
+				{ label: 'Analytics', url: 'analytics' }
+			]
+		},
+		{
+			section: 'Resources',
+			links: [
+				{ label: 'Blog', url: 'blog' },
+				{ label: 'Developers', url: 'developers' },
+				{ label: 'Support', url: 'support' }
+			]
+		},
+		{
+			section: 'Company',
+			links: [
+				{ label: 'About', url: 'about' },
+				{ label: 'Our Team', url: 'team' },
+				{ label: 'Careers', url: 'careers' },
+				{ label: 'Contact', url: 'contact' }
+			]
+		}
+	]} />
 </Layout>
 
 <style>
