@@ -1,8 +1,10 @@
 ---
-import Card from './Card.astro';
+import Card from './Card.tsx';
 
 interface CardInformation {
 	title: string;
+	icon: string,
+	alt: string;
 	description: string;
 }
 
@@ -13,8 +15,10 @@ interface Props {
 const { cards } = Astro.props;
 ---
 
-<ol class="link-card">
-	{ cards.map((cardInfo: CardInformation) => <Card title={cardInfo.title} description={cardInfo.description} />) }
+<ol class="mt-20 list-none">
+	{ 
+		cards.map((cardInfo: CardInformation, index: number) => <Card client:only="react" id={Date.now() * index} title={cardInfo.title} icon={cardInfo.icon} alt={cardInfo.alt} description={cardInfo.description} />) 
+	}
 </ol>
 <style>
 	
