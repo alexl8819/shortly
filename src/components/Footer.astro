@@ -1,17 +1,23 @@
 ---
 import { Image, getImage } from 'astro:assets';
 
+import { Link } from 'react-aria-components';
+
 import logo from '../assets/logo.svg';
+import pinterestIcon from '../assets/icon-pinterest.svg';
+import instagramIcon from '../assets/icon-instagram.svg';
+import twitterIcon from '../assets/icon-twitter.svg';
+import facebookIcon from '../assets/icon-facebook.svg';
 import bgBoost from '../assets/bg-boost-mobile.svg';
 
-interface Link {
+interface PageLink {
   label: string,
   url: string
 }
 
 interface DirectoryListing {
   section: string,
-  links: Array<Link>
+  links: Array<PageLink>
 }
 
 const { directory } = Astro.props;
@@ -24,13 +30,48 @@ const boostBgImg = await getImage({ src: bgBoost, format: 'webp' });
     <h2 class="leading-[3rem] tracking-[-0.044em] font-bold text-[1.75rem] text-white">Boost your links today</h2>
     <button class="mt-4 bg-cyan text-white rounded-full py-3 px-8 font-bold text-[1.25rem]">Get Started</button>
   </div>
-  <div>
-    <Image src={logo} alt="main site logo in footer" />
+  <div class="py-12 flex flex-col justify-center items-center bg-very-dark-violet">
+    <Image class="invert" src={logo} alt="main site logo in footer" />
+    <div class="mt-[3.063rem]">
     {
-      directory.map((listing: DirectoryListing) => {
-
-      })
+      directory.map((listing: DirectoryListing) => (
+          <div class="text-center mb-10 last:mb-0">
+            <h3 class="font-bold text-[1rem] tracking-[-0.016em] text-white">{ listing.section }</h3>
+            <ol class="mt-[1.375rem] list-none flex flex-col">
+              { 
+                listing.links.map((link: PageLink) => (
+                  <li class="mb-[0.625rem] last:mb-0">
+                    <Link className="tracking-[-0.014em] font-medium text-[0.938rem] text-gray" href={link.url}>{ link.label }</Link>
+                  </li>
+                )) 
+              }
+            </ol>
+          </div>
+      ))
     }
+    </div>
+    <ol class="mt-12 w-[10.5rem] list-none flex flex-row justify-between items-center">
+      <li>
+        <Link href="#facebook" target="_blank">
+          <Image src={facebookIcon} alt="facebook social icon" loading="lazy" />
+        </Link>
+      </li>
+      <li>
+        <Link href="#twitter" target="_blank">
+          <Image src={twitterIcon} alt="twitter social icon" loading="lazy" />
+        </Link>
+      </li>
+      <li>
+        <Link href="#pinterest" target="_blank">
+          <Image src={pinterestIcon} alt="pinterest social icon" loading="lazy" />
+        </Link>
+      </li>
+      <li>
+        <Link href="#instagram" target="_blank">
+          <Image src={instagramIcon} alt="instagram social icon" loading="lazy" />
+        </Link>
+      </li>
+    </ol>
   </div>
 </footer>
 <style>
