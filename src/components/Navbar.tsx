@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faBars } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-aria-components';
 
 interface NavLink {
@@ -8,15 +10,20 @@ interface NavLink {
 }
 
 export default function Navbar ({ links }) {
-  /*Login
-  Sign Up*/
     return (
         <>
-            <ol className="hidden">
-                { 
-                    links.map((link: NavLink, index: number) => <Link key={index} href={link.url}>{link.label}</Link> ) 
-                }
-            </ol>
+            <div className="hidden">
+                <ol className="list-none">
+                    { 
+                        links.map((link: NavLink, index: number) => <Link key={index} href={link.url}>{link.label}</Link> ) 
+                    }
+                </ol>
+                <Link href="login">Login</Link>
+                <Link href="sign-up">Sign Up</Link>
+            </div>
+            <div className="w-[24px]">
+                <FontAwesomeIcon icon={faBars} size="sm" style={{color: '#9E9AA8'}} />
+            </div>
         </>
     );
 }

@@ -8,7 +8,7 @@ const { links } = Astro.props;
 const baseURL = import.meta.env.BASE_URL;
 
 ---
-<header class="mt-6 mx-6 flex justify-start">
+<header class="mt-12 px-6 flex flex-row justify-between items-center">
   <a href={baseURL}><Image class="header__logo" src={logo} alt="shortly - url shortener" loading="eager" /></a>
 
   <Navbar links={links} />
