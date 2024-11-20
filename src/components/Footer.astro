@@ -10,14 +10,14 @@ import twitterIcon from '../assets/icon-twitter.svg';
 import facebookIcon from '../assets/icon-facebook.svg';
 import bgBoost from '../assets/bg-boost-mobile.svg';
 
-interface PageLink {
+interface NavLink {
   label: string,
   url: string
 }
 
 interface DirectoryListing {
   section: string,
-  links: Array<PageLink>
+  links: Array<NavLink>
 }
 
 const { directory } = Astro.props;
@@ -39,7 +39,7 @@ const boostBgImg = await getImage({ src: bgBoost, format: 'webp' });
             <h3 class="font-bold text-[1rem] tracking-[-0.016em] text-white">{ listing.section }</h3>
             <ol class="mt-[1.375rem] list-none flex flex-col">
               { 
-                listing.links.map((link: PageLink) => (
+                listing.links.map((link: NavLink) => (
                   <li class="mb-[0.625rem] last:mb-0">
                     <Link className="tracking-[-0.014em] font-medium text-[0.938rem] text-gray" href={link.url}>{ link.label }</Link>
                   </li>
