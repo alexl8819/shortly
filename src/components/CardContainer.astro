@@ -17,7 +17,7 @@ const { cards } = Astro.props;
 
 <ol class="mt-20 list-none">
 	{ 
-		cards.map((cardInfo: CardInformation, index: number) => <Card client:only="react" id={Date.now() * index} title={cardInfo.title} icon={cardInfo.icon} alt={cardInfo.alt} description={cardInfo.description} />) 
+		cards.map((cardInfo: CardInformation, index: number) => <Card client:only="react" id={index} title={cardInfo.title} icon={cardInfo.icon} alt={cardInfo.alt} description={cardInfo.description} />) 
 	}
 </ol>
 <style>

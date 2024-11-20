@@ -14,7 +14,7 @@ export default function Navbar ({ links }) {
         <>
             <ol className="hidden">
                 { 
-                    links.map((link: NavLink) => <Link href={link.url}>{link.label}</Link> ) 
+                    links.map((link: NavLink, index: number) => <Link key={index} href={link.url}>{link.label}</Link> ) 
                 }
             </ol>
         </>
