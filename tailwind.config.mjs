@@ -14,6 +14,9 @@ export default {
 				'cyan': 'hsl(180, 66%, 49%)',
 				'gray': 'hsl(0, 0%, 75%)',
 				'red': 'hsl(0, 87%, 67%)'
+			},
+			backgroundImage: {
+				'bg-shorten': `url(./src/assets/bg-shorten-mobile.svg)`
 			}
 		},
 	},

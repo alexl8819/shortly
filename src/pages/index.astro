@@ -8,9 +8,6 @@ import ShortenerWidget from '../components/Shortener.tsx';
 import CardContainer from '../components/CardContainer.astro';
 
 import workerIllustration from '../assets/illustration-working.svg';
-import bgShorten from '../assets/bg-shorten-mobile.svg';
-
-const shortenBgImg = await getImage({ src: bgShorten, format: 'webp' });
 ---
 
 <Layout title="Main - Landing page">
@@ -26,8 +23,8 @@ const shortenBgImg = await getImage({ src: bgShorten, format: 'webp' });
   			<p class="mt-[0.938rem] text-lg leading-[1.875rem] tracking-[0.008em] text-grayish-violet font-medium">Build your brand’s recognition and get detailed insights on how your links are performing.</p>
   			<button class="mt-8 py-3 px-8 rounded-full bg-cyan text-white font-bold text-[1.25rem]">Get Started</button>
   		</section>
-		<section class="mt-[5.5rem] p-6 bg-dark-violet rounded-lg bg-no-repeat bg-right-top" style=`background-image: url(${shortenBgImg.src})`>
-			<ShortenerWidget />
+		<section class="mt-[5.5rem]">
+			<ShortenerWidget client:only="react" />
 		</section>
 		<section class="mt-20 text-center">
 			<div>
