@@ -1,5 +1,5 @@
 ---
-import { Image, getImage } from 'astro:assets';
+import { Image } from 'astro:assets';
 
 import { Link } from 'react-aria-components';
 
@@ -8,7 +8,6 @@ import pinterestIcon from '../assets/icon-pinterest.svg';
 import instagramIcon from '../assets/icon-instagram.svg';
 import twitterIcon from '../assets/icon-twitter.svg';
 import facebookIcon from '../assets/icon-facebook.svg';
-import bgBoost from '../assets/bg-boost-mobile.svg';
 
 interface NavLink {
   label: string,
@@ -23,10 +22,9 @@ interface DirectoryListing {
 const { directory } = Astro.props;
 const baseURL = import.meta.env.BASE_URL;
 
-const boostBgImg = await getImage({ src: bgBoost, format: 'webp' });
 ---
 <footer class="mt-6 flex flex-col justify-start w-full">
-  <div class="flex flex-col justify-center items-center bg-dark-violet text-center min-h-[18.75rem] bg-no-repeat bg-auto bg-top" style={`background-image: url(${boostBgImg.src})`}>
+  <div class="flex flex-col justify-center items-center bg-dark-violet text-center min-h-[18.75rem] bg-bg-boost bg-no-repeat bg-auto bg-top">
     <h2 class="leading-[3rem] tracking-[-0.044em] font-bold text-[1.75rem] text-white">Boost your links today</h2>
     <button class="mt-4 bg-cyan text-white rounded-full py-3 px-8 font-bold text-[1.25rem]">Get Started</button>
   </div>

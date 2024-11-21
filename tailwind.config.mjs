@@ -16,7 +16,8 @@ export default {
 				'red': 'hsl(0, 87%, 67%)'
 			},
 			backgroundImage: {
-				'bg-shorten': `url(./src/assets/bg-shorten-mobile.svg)`
+				'bg-shorten': 'url(./src/assets/bg-shorten-mobile.svg)',
+				'bg-boost': 'url(./src/assets/bg-boost-mobile.svg)'
 			}
 		},
 	},
