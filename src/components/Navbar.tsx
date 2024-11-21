@@ -4,12 +4,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-aria-components';
 
+interface NavLinks {
+    links: Array<NavLink>
+} 
+
 interface NavLink {
     url: string,
     label: string
 }
 
-export default function Navbar ({ links }) {
+export default function Navbar ({ links }: NavLinks) {
     return (
         <>
             <div className="hidden">
@@ -21,7 +25,7 @@ export default function Navbar ({ links }) {
                 <Link href="login">Login</Link>
                 <Link href="sign-up">Sign Up</Link>
             </div>
-            <div className="w-[24px]">
+            <div className="w-[24px] cursor-pointer">
                 <FontAwesomeIcon icon={faBars} size="sm" style={{color: '#9E9AA8'}} />
             </div>
         </>
