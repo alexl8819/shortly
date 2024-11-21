@@ -1,13 +1,16 @@
 import { 
     Button, 
     Form, 
-    TextField, 
+    TextField,
+    FieldError, 
     Label, 
     Input 
 } from 'react-aria-components';
+import delay from 'delay';
+import { nanoid } from 'nanoid';
 import clipboard from 'clipboardy';
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface ShortenedUrl {
     original: string,
@@ -15,23 +18,48 @@ interface ShortenedUrl {
 }
 
 export default function ShortenerWidget () {
+    const [longUrlInput,setLongUrlInput] = useState<string>('');
     const [shortenedLinks, setShortenedLinks] = useState<Array<ShortenedUrl>>([]);
-    useEffect(() => {
-        setShortenedLinks([
-            {
-                original: 'https://test.com',
-                shortened: 'https://re.link/k4lKyk'
-            }
-        ])
-    }, []);
+
+    const queueLink = (e) => {
+        e.preventDefault();
+
+        if (!longUrlInput.length) {
+            return;
+        }
+        
+        setShortenedLinks((prev) => [...prev, {
+            original: longUrlInput,
+            shortened: `https://re.link/${nanoid(6)}`
+        }]);
+    };
+    
+    const handleInputChange = ({ target }) => {
+        const longUrl = target.value;
+        setLongUrlInput(longUrl);
+    };
+
     return (
         <>
-            <Form className='p-6 bg-dark-violet rounded-lg bg-no-repeat bg-right-top bg-bg-shorten'>
-                <TextField>
-                    <Label className='sr-only'>Enter URL to shorten</Label>
-                    <Input className='rounded py-3 px-6 max-w-[17.438rem]' placeholder='Shorten a link here...' />
+            <Form onSubmit={queueLink} className='p-6 bg-dark-violet rounded-lg bg-no-repeat bg-right-top bg-bg-shorten'>
+                <TextField isRequired>
+                    <Label htmlFor='link' className='sr-only'>Enter URL to shorten</Label>
+                    <Input 
+                        type='url' 
+                        id='link' 
+                        name='link' 
+                        className='rounded outline-none py-3 px-6 max-w-[17.438rem] invalid:border-2 invalid:border-red'
+                        //pattern='^https?:\\/\\/(?:www\\.)?[a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}(?:\\/[^\\s]*)?$'
+                        placeholder='Shorten a link here...'
+                        onChange={handleInputChange}
+                    />
+                    <FieldError className='mt-[0.25rem] font-medium text-[0.75rem] tracking-[0.005em] leading-[1.125rem] text-red italic'>
+                        {
+                            ({validationDetails}) => (validationDetails.valueMissing || !validationDetails.valid ? 'Please enter a valid URL' : '')
+                        }
+                    </FieldError>
                 </TextField>
-                <Button className='mt-4 py-3 px-6 rounded bg-cyan text-white w-full'>Shorten It!</Button>
+                <Input type='submit' className='mt-4 py-3 px-6 rounded bg-cyan text-white w-full cursor-pointer' value='Shorten It!' />
             </Form>
             <ul className='mt-6 list-none'>
                 { 
@@ -43,15 +71,30 @@ export default function ShortenerWidget () {
 }
 
 function ShortenedLinkPreview ({ shorten }) {
+    const [hasCopied, setHasCopied] = useState(false);
+
     const { original, shortened } = shorten;
-    const copyShortened = async () => await clipboard.write(shortened);
+    
+    const copyShortened = async () => {
+        setHasCopied(true);
+        await clipboard.write(shortened);
+        await delay(2500);
+        setHasCopied(false);
+    };
+    
     return (
-        <li key={shortened} className='bg-white text-left'>
+        <li key={shortened} className='mb-6 bg-white text-left'>
             <div className='mb-4 space-y-2 divide-y divide-grayish-violet'>
                 <p className='font-medium text-[1rem] leading-9 text-very-dark-blue'>{ original }</p>
                 <p className='pt-2 font-medium text-[1rem] text-cyan'>{ shortened }</p>
             </div>
-            <Button onPress={copyShortened} className='py-2 px-6 rounded-lg bg-cyan font-bold text-[1rem] text-white w-full'>Copy</Button>
+            <Button 
+                onPress={copyShortened} 
+                className={`py-2 px-6 rounded-lg ${hasCopied ? 'bg-dark-violet' : 'bg-cyan'} font-bold text-[1rem] text-white w-full`}
+                isDisabled={hasCopied}
+            >
+                { hasCopied ? 'Copied!' : 'Copy' }
+            </Button>
         </li>
     );
 }
