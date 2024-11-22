@@ -23,7 +23,7 @@ export default function Header ({ links }) {
           <FontAwesomeIcon icon={faBars} size="2x" style={{color: '#9E9AA8'}} />
         </Button>
       </div>
-      <div className={`lg:hidden ${isOpened ? 'flex' : 'hidden'} flex-col lg:flex-row justify-center items-center lg:bg-transparent bg-dark-violet rounded-lg mt-2`}>
+      <div className={`lg:hidden ${isOpened ? 'flex animate-fadeIn' : 'animate-fadeOut hidden'} flex-col lg:flex-row justify-center items-center lg:bg-transparent bg-dark-violet rounded-lg mt-2`}>
         <Navbar links={links} />
       </div>
     </header>

@@ -18,7 +18,21 @@ export default {
 			backgroundImage: {
 				'bg-shorten': 'url(./src/assets/bg-shorten-mobile.svg)',
 				'bg-boost': 'url(./src/assets/bg-boost-mobile.svg)'
-			}
+			},
+			animation: {
+				fadeIn: 'fadeIn 0.5s ease-in',
+				fadeOut: 'fadeOut 1s ease-in-out'
+			},
+			keyframes: (_theme) => ({
+				fadeIn: {
+				  '0%': { opacity: 0 },
+				  '100%': { opacity: 1 }
+				},
+				fadeOut: {
+					'0%': { opacity: 1, display: 'block' },
+					'100%': { opacity: 0, display: 'none' }
+				}
+			}),
 		},
 	},
 	plugins: [],
