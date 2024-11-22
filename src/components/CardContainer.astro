@@ -18,7 +18,7 @@ const { cards } = Astro.props;
 	<div class="z-0 relative bg-cyan w-[0.5rem] h-[60rem]"></div>
 	<ol class="z-10 absolute list-none">
 		{ 
-			cards.map((cardInfo: CardInformation, index: number) => <Card client:only="react" id={index} title={cardInfo.title} icon={cardInfo.icon} alt={cardInfo.alt} description={cardInfo.description} />) 
+			cards.map((cardInfo: CardInformation, index: number) => <Card client:visible id={index} title={cardInfo.title} icon={cardInfo.icon} alt={cardInfo.alt} description={cardInfo.description} />) 
 		}
 	</ol>
 </div>
