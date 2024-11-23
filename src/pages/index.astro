@@ -16,13 +16,15 @@ import workerIllustration from '../assets/illustration-working.svg';
 		{ label: 'Pricing', url: 'pricing' }, 
 		{ label: 'Resources', url: 'resources' }
 	]} />
-	<main class="px-6">
-		<section class="text-center">
-			<Image class="m-[4.188rem]" src={workerIllustration} alt="worker illustration on landing page" loading="lazy" />
-			<h1 class="mt-[3.75rem] text-[2.625rem] leading-[3rem] tracking-[-0.066em] font-bold text-very-dark-blue">More than just shorter links</h1>
-  			<p class="mt-[0.938rem] text-lg leading-[1.875rem] tracking-[0.008em] text-grayish-violet font-medium">Build your brand’s recognition and get detailed insights on how your links are performing.</p>
-  			<button class="mt-8 py-3 px-8 rounded-full bg-cyan text-white font-bold text-[1.25rem]">Get Started</button>
-  		</section>
+	<main class="lg:px-[10.375rem] lg:mt-6 px-6">
+		<section class="flex lg:flex-row-reverse flex-col items-center lg:text-left text-center">
+			<Image class="lg:w-[50%] lg:m-0 m-[4.188rem]" src={workerIllustration} alt="worker illustration on landing page" loading="lazy" />
+			<div class="lg:w-[50%] lg:mr-16 flex flex-col lg:justify-start lg:items-start items-center">
+				<h1 class="mt-[3.75rem] lg:text-[5rem] text-[2.625rem] lg:leading-[5.625rem] leading-[3rem] tracking-[-0.066em] font-bold text-very-dark-blue">More than just shorter links</h1>
+  				<p class="mt-[0.938rem] lg:px-2 text-lg leading-[1.875rem] tracking-[0.008em] text-grayish-violet font-medium">Build your brand’s recognition and get detailed insights on how your links are performing.</p>
+  				<button class="mt-8 py-3 px-8 rounded-full bg-cyan text-white font-bold text-[1.25rem]">Get Started</button>
+			</div>
+		</section>
 		<section class="mt-[5.5rem]">
 			<ShortenerWidget client:visible />
 		</section>

@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { Link, Button } from 'react-aria-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-aria-components';
 
 import logo from '../assets/logo.svg';
 import Navbar from './Navbar.tsx';
@@ -13,18 +11,13 @@ export default function Header ({ links }) {
   const toggleNav = () => setIsOpened(!isOpened);
 
   return (
-    <header className='mt-12 px-6'>
-      <div className='flex flex-row justify-between items-center'>
+    <header className={`mt-12 ${isOpened ? 'mb-[25rem]' : 'mb-0'} lg:px-[10.375rem] px-6`}>
+      <div className='flex flex-row lg:justify-start justify-between items-center'>
         <Link href={baseURL}>
           <img className="header__logo" src={logo.src} alt="shortly - url shortener" loading="eager" />
         </Link>
 
-        <Button onPress={toggleNav} className="w-[24px] outline-none">
-          <FontAwesomeIcon icon={faBars} size="2x" style={{color: '#9E9AA8'}} />
-        </Button>
-      </div>
-      <div className={`lg:hidden ${isOpened ? 'flex animate-fadeIn' : 'animate-fadeOut hidden'} flex-col lg:flex-row justify-center items-center lg:bg-transparent bg-dark-violet rounded-lg mt-2`}>
-        <Navbar links={links} />
+        <Navbar isOpen={isOpened} toggle={toggleNav} links={links} />
       </div>
     </header>
   );

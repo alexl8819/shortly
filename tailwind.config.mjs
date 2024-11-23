@@ -16,8 +16,10 @@ export default {
 				'red': 'hsl(0, 87%, 67%)'
 			},
 			backgroundImage: {
-				'bg-shorten': 'url(./src/assets/bg-shorten-mobile.svg)',
-				'bg-boost': 'url(./src/assets/bg-boost-mobile.svg)'
+				'bg-shorten-mobile': 'url(./src/assets/bg-shorten-mobile.svg)',
+				'bg-shorten-desktop': 'url(./src/assets/bg-shorten-desktop.svg)',
+				'bg-boost-mobile': 'url(./src/assets/bg-boost-mobile.svg)',
+				'bg-boost-desktop': 'url(./src/assets/bg-boost-desktop.svg)'
 			},
 			animation: {
 				fadeIn: 'fadeIn 0.5s ease-in',
