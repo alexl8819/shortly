@@ -41,14 +41,14 @@ export default function ShortenerWidget () {
 
     return (
         <>
-            <Form onSubmit={queueLink} className='lg:p-10 p-6 flex lg:flex-row flex-col bg-dark-violet rounded-lg bg-no-repeat bg-right-top lg:bg-bg-shorten-desktop bg-bg-shorten-mobile'>
+            <Form onSubmit={queueLink} className='xl:p-10 p-6 flex xl:flex-row flex-col bg-dark-violet rounded-xl bg-no-repeat bg-right-top lg:bg-bg-shorten-desktop bg-bg-shorten-mobile'>
                 <TextField className='w-full' isRequired>
                     <Label htmlFor='link' className='sr-only'>Enter URL to shorten</Label>
                     <Input 
                         type='url' 
                         id='link' 
                         name='link' 
-                        className='rounded outline-none py-3 px-6 lg:w-full lg:max-w-none max-w-[17.438rem] invalid:border-2 invalid:border-red'
+                        className='rounded outline-none py-3 px-6 xl:w-full xl:max-w-none max-w-[17.438rem] invalid:border-2 invalid:border-red'
                         //pattern='^https?:\\/\\/(?:www\\.)?[a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}(?:\\/[^\\s]*)?$'
                         placeholder='Shorten a link here...'
                         onChange={handleInputChange}
@@ -59,7 +59,7 @@ export default function ShortenerWidget () {
                         }
                     </FieldError>
                 </TextField>
-                <Input type='submit' className='lg:mt-0 mt-4 lg:ml-6 py-3 lg:px-12 px-6 rounded bg-cyan text-white lg:w-auto w-full cursor-pointer' value='Shorten It!' />
+                <Input type='submit' className='xl:mt-0 mt-4 xl:ml-6 py-3 xl:px-12 px-6 rounded bg-cyan text-white xl:w-auto w-full cursor-pointer' value='Shorten It!' />
             </Form>
             <ul className='mt-6 list-none'>
                 { 
@@ -90,7 +90,7 @@ function ShortenedLinkPreview ({ shorten }) {
             </div>
             <Button 
                 onPress={copyShortened} 
-                className={`py-2 px-6 rounded-lg ${hasCopied ? 'bg-dark-violet' : 'bg-cyan'} font-bold text-[1rem] text-white w-full`}
+                className={`py-2 px-6 rounded-full ${hasCopied ? 'bg-dark-violet' : 'bg-cyan'} font-bold text-[1rem] text-white w-full`}
                 isDisabled={hasCopied}
             >
                 { hasCopied ? 'Copied!' : 'Copy' }
