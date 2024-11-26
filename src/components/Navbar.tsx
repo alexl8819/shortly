@@ -27,13 +27,13 @@ export default function Navbar ({ toggle, isOpen, links }: NavLinks) {
                     <ul className='xl:mb-0 mb-[1.875rem] xl:w-[16.563rem] xl:space-x-7 list-none flex xl:flex-row flex-col xl:justify-start justify-center items-center'>
                     { 
                         links.map((link: NavLink, index: number) => (
-                            <Link className='xl:mb-0 mb-[1.875rem] last:mb-0 font-bold text-[1.125rem] xl:text-grayish-violet text-white' key={index} href={link.url}>{link.label}</Link> )
+                            <Link className='xl:mb-0 mb-[1.875rem] last:mb-0 font-bold text-[1.125rem] hover:text-very-dark-blue xl:text-grayish-violet text-white' key={index} href={link.url}>{link.label}</Link> )
                         ) 
                     }
                     </ul>
                     <div className='xl:pt-0 pt-8 xl:space-x-7 xl:w-auto flex xl:flex-row flex-col justify-center items-center text-center'>
-                        <Link className='font-bold text-[1.125rem] xl:text-grayish-violet text-white' href='login'>Login</Link>
-                        <Link className='xl:mt-0 mt-6 py-2 px-6 rounded-full bg-cyan font-bold text-[1.125rem] text-white w-full' href='sign-up'>Sign Up</Link>
+                        <Link className='font-bold text-[1.125rem] hover:text-very-dark-blue xl:text-grayish-violet text-white' href='login'>Login</Link>
+                        <Link className='xl:mt-0 mt-6 py-2 px-6 rounded-full bg-cyan hover:bg-light-cyan font-bold text-[1.125rem] text-white w-full' href='sign-up'>Sign Up</Link>
                     </div>
                 </nav>
             </div>

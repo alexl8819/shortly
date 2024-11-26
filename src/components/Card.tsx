@@ -19,8 +19,8 @@ export default function Card({ id, title, icon, alt, description }) {
 	// TODO: use skeleton loader instead of null
 	return (
 		<li key={id} className={`xl:mb-0 mb-20 xl:w-2/6 xl:px-[0.938rem] xl:${id === 1 ? 'mt-6' : (id === 2 ? 'mt-8' : 'mt-0')}`}>
-			<article className='flex flex-col justify-center items-center text-center bg-white'>
-				<div className='flex justify-center items-center rounded-full bg-dark-violet w-[5.5rem] h-[5.5rem] xl:mt-0 -mt-10'>
+			<article className='flex flex-col xl:justify-start justify-center xl:items-start items-center xl:text-left text-center bg-white'>
+				<div className='xl:ml-6 flex justify-center items-center rounded-full bg-dark-violet w-[5.5rem] h-[5.5rem] xl:-mt-12 -mt-10'>
 					{ iconImg ? <img className='w-[2.5rem] h-[2.5rem]' src={iconImg} alt={alt} loading='lazy' /> : null }
 				</div>
 				<div className='p-7'>
