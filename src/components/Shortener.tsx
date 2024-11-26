@@ -48,7 +48,7 @@ export default function ShortenerWidget () {
                         type='url' 
                         id='link' 
                         name='link' 
-                        className='rounded outline-none py-3 px-6 xl:w-full xl:max-w-none max-w-[17.438rem] invalid:border-2 invalid:border-red'
+                        className='rounded outline-none py-3 px-6 w-full invalid:border-2 invalid:border-red'
                         //pattern='^https?:\\/\\/(?:www\\.)?[a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}(?:\\/[^\\s]*)?$'
                         placeholder='Shorten a link here...'
                         onChange={handleInputChange}
