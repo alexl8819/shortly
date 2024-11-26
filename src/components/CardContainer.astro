@@ -14,8 +14,8 @@ interface Props {
 
 const { cards } = Astro.props;
 ---
-<div class="xl:mt-0 mt-40 xl:max-h-[36.563rem] relative flex flex-col justify-center items-center">
-	<div class="z-0 relative bg-cyan xl:rotate-90 w-[0.5rem] h-[60rem]"></div>
+<div class="xl:mt-0 mt-40 xl:mb-0 mb-8 xl:max-h-[36.563rem] relative flex flex-col justify-center items-center">
+	<div class="z-0 relative bg-cyan xl:rotate-90 w-[0.5rem] md:h-[48rem] h-[57rem]"></div>
 	<ol class="z-10 absolute list-none w-full flex xl:flex-row flex-col">
 		{ 
 			cards.map((cardInfo: CardInformation, index: number) => <Card client:visible id={index} title={cardInfo.title} icon={cardInfo.icon} alt={cardInfo.alt} description={cardInfo.description} />) 
