@@ -11,8 +11,8 @@ export default function Header ({ links }) {
   const toggleNav = () => setIsOpened(!isOpened);
 
   return (
-    <header className={`mt-12 ${isOpened ? 'mb-[25rem]' : 'mb-0'} xl:px-[10.375rem] px-6`}>
-      <div className='flex flex-row xl:justify-start justify-between items-center'>
+    <header className={`mt-12 ${isOpened ? 'mb-[25rem]' : 'mb-0'} lg:px-[7.375rem] xl:px-[10.375rem] px-6`}>
+      <div className='flex flex-row lg:justify-start justify-between items-center'>
         <Link href={baseURL}>
           <img className="header__logo" src={logo.src} alt="shortly - url shortener" loading="eager" />
         </Link>
