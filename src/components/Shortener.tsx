@@ -41,7 +41,7 @@ export default function ShortenerWidget () {
 
     return (
         <>
-            <Form onSubmit={queueLink} className='xl:p-10 p-6 flex xl:flex-row flex-col bg-dark-violet rounded-xl bg-no-repeat bg-right-top lg:bg-bg-shorten-desktop bg-bg-shorten-mobile'>
+            <Form onSubmit={queueLink} className='lg:p-10 p-6 flex lg:flex-row flex-col bg-dark-violet rounded-xl bg-no-repeat bg-right-top lg:bg-bg-shorten-desktop bg-bg-shorten-mobile'>
                 <TextField className='w-full' isRequired>
                     <Label htmlFor='link' className='sr-only'>Enter URL to shorten</Label>
                     <Input 
@@ -59,7 +59,7 @@ export default function ShortenerWidget () {
                         }
                     </FieldError>
                 </TextField>
-                <Input type='submit' className='xl:mt-0 mt-4 xl:ml-6 py-3 xl:px-12 px-6 rounded-lg hover:bg-light-cyan bg-cyan text-white xl:w-auto xl:max-h-[3.25rem] w-full cursor-pointer' value='Shorten It!' />
+                <Input type='submit' className='lg:mt-0 mt-4 lg:ml-6 py-3 lg:px-12 px-6 rounded-lg hover:bg-light-cyan bg-cyan text-white lg:w-auto lg:max-h-[3.25rem] w-full cursor-pointer' value='Shorten It!' />
             </Form>
             <ul className='mt-6 list-none'>
                 { 
@@ -83,14 +83,14 @@ function ShortenedLinkPreview ({ shorten }) {
     };
     
     return (
-        <li key={shortened} className='mb-6 flex xl:flex-row flex-col bg-white text-left'>
-            <div className='xl:px-4 xl:mb-2 mb-4 flex xl:flex-row flex-col xl:justify-between items-center xl:space-y-0 space-y-2 xl:divide-none divide-y divide-grayish-violet w-full'>
-                <p className='xl:text-left font-medium xl:text-[1.25rem] text-[1rem] leading-9 text-very-dark-blue w-full'>{ original }</p>
-                <p className='xl:pt-0 pt-2 xl:text-right font-medium xl:text-[1.25rem] text-[1rem] text-cyan w-full'>{ shortened }</p>
+        <li key={shortened} className='mb-6 flex lg:flex-row flex-col bg-white text-left'>
+            <div className='lg:px-4 lg:mb-2 mb-4 flex lg:flex-row flex-col lg:justify-between items-center lg:space-y-0 space-y-2 lg:divide-none divide-y divide-grayish-violet w-full'>
+                <p className='lg:text-left font-medium lg:text-[1.25rem] text-[1rem] leading-9 text-very-dark-blue w-full'>{ original }</p>
+                <p className='lg:pt-0 pt-2 lg:text-right font-medium lg:text-[1.25rem] text-[1rem] text-cyan w-full'>{ shortened }</p>
             </div>
             <Button 
                 onPress={copyShortened} 
-                className={`xl:ml-4 py-2 xl:px-10 px-6 rounded-lg ${hasCopied ? 'bg-dark-violet' : 'bg-cyan'} font-bold text-[1rem] text-white xl:w-auto w-full`}
+                className={`lg:ml-4 py-2 lg:px-10 px-6 rounded-lg ${hasCopied ? 'bg-dark-violet' : 'bg-cyan'} font-bold text-[1rem] text-white lg:w-auto w-full`}
                 isDisabled={hasCopied}
             >
                 { hasCopied ? 'Copied!' : 'Copy' }
