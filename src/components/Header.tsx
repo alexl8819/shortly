@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-aria-components';
+import PropTypes from 'prop-types';
 
 import logo from '../assets/logo.svg';
 import Navbar from './Navbar.tsx';
@@ -21,4 +22,8 @@ export default function Header ({ links }) {
       </div>
     </header>
   );
+}
+
+Header.propTypes = {
+  links: PropTypes.arrayOf(PropTypes.object).isRequired
 }

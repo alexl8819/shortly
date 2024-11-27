@@ -63,7 +63,7 @@ export default function ShortenerWidget () {
             </Form>
             <ul className='mt-6 list-none'>
                 { 
-                    shortenedLinks.map((shorten: ShortenedUrl) => (<ShortenedLinkPreview shorten={shorten} />))
+                    shortenedLinks.map((shorten: ShortenedUrl, index: number) => (<ShortenedLinkPreview key={index} shorten={shorten} />))
                 }
             </ul>
         </>
@@ -83,7 +83,7 @@ function ShortenedLinkPreview ({ shorten }) {
     };
     
     return (
-        <li key={shortened} className='mb-6 flex lg:flex-row flex-col bg-white text-left'>
+        <li className='mb-6 flex lg:flex-row flex-col bg-white text-left'>
             <div className='lg:px-4 lg:mb-2 mb-4 flex lg:flex-row flex-col lg:justify-between items-center lg:space-y-0 space-y-2 lg:divide-none divide-y divide-grayish-violet w-full'>
                 <p className='lg:text-left font-medium lg:text-[1.25rem] text-[1rem] leading-9 text-very-dark-blue w-full'>{ original }</p>
                 <p className='lg:pt-0 pt-2 lg:text-right font-medium lg:text-[1.25rem] text-[1rem] text-cyan w-full'>{ shortened }</p>
