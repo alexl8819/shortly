@@ -10,7 +10,7 @@ import delay from 'delay';
 import { nanoid } from 'nanoid';
 import clipboard from 'clipboardy';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 
 interface ShortenedUrl {
     original: string,
@@ -21,7 +21,7 @@ export default function ShortenerWidget () {
     const [longUrlInput,setLongUrlInput] = useState<string>('');
     const [shortenedLinks, setShortenedLinks] = useState<Array<ShortenedUrl>>([]);
 
-    const queueLink = (e) => {
+    const queueLink = (e: FormEvent) => {
         e.preventDefault();
 
         if (!longUrlInput.length) {
@@ -48,18 +48,18 @@ export default function ShortenerWidget () {
                         type='url' 
                         id='link' 
                         name='link' 
-                        className='rounded outline-none py-3 px-6 w-full invalid:border-2 invalid:border-red'
+                        className={`rounded outline-none py-3 px-6 w-full ${longUrlInput.length > 0 ? 'invalid:border-2 invalid:border-red': 'border-none'}`}
                         //pattern='^https?:\\/\\/(?:www\\.)?[a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}(?:\\/[^\\s]*)?$'
                         placeholder='Shorten a link here...'
                         onChange={handleInputChange}
                     />
                     <FieldError className='mt-[0.25rem] font-medium text-[0.75rem] tracking-[0.005em] leading-[1.125rem] text-red italic'>
                         {
-                            ({validationDetails}) => (validationDetails.valueMissing || !validationDetails.valid ? 'Please enter a valid URL' : '')
+                            ({validationDetails}) => (longUrlInput.length > 0 && (validationDetails.valueMissing || !validationDetails.valid) ? 'Please enter a valid URL' : '')
                         }
                     </FieldError>
                 </TextField>
-                <Input type='submit' className='lg:mt-0 mt-4 lg:ml-6 py-3 lg:px-12 px-6 rounded-lg hover:bg-light-cyan bg-cyan text-white lg:w-auto lg:max-h-[3.25rem] w-full cursor-pointer' value='Shorten It!' />
+                <Input type='submit' className='lg:mt-0 mt-4 lg:ml-6 py-3 lg:px-12 px-6 rounded-lg hover:bg-light-cyan bg-cyan text-white lg:w-auto lg:max-h-[3.25rem] w-full cursor-pointer disabled:cursor-not-allowed' value='Shorten It!' disabled={longUrlInput.length === 0}/>
             </Form>
             <ul className='mt-6 list-none'>
                 { 
