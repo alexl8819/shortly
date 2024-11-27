@@ -22,7 +22,7 @@ export default function Navbar ({ toggle, isOpen, links }: NavLinks) {
                 <FontAwesomeIcon icon={faBars} size="2x" style={{color: '#9E9AA8'}} />
             </Button>
 
-            <div className={`${isOpen ? 'absolute top-24 left-4 md:w-[95%] w-[91%] animate-fadeIn' : 'animate-fadeOut hidden'} lg:animate-none lg:flex lg:flex-row lg:items-center lg:bg-transparent bg-dark-violet lg:rounded-none rounded-lg`}>
+            <div className={`${isOpen ? 'absolute top-24 left-4 md:w-[95%] w-[91%] animate-fadeIn' : 'absolute top-24 left-4 md:w-[95%] w-[91%] animate-fadeOut hidden'} lg:relative lg:top-0 lg:left-0 lg:animate-none lg:flex lg:flex-row lg:items-center lg:bg-transparent bg-dark-violet lg:rounded-none rounded-lg`}>
                 <nav className='lg:p-0 p-6 divide-y lg:divide-none divide-grayish-violet/25 flex lg:flex-row flex-col lg:justify-between justify-center items-center w-full' aria-label='main navigation'> 
                     <ul className='lg:mb-0 mb-[1.875rem] xl:w-[16.563rem] lg:space-x-7 list-none flex lg:flex-row flex-col lg:justify-start justify-center items-center'>
                     { 
