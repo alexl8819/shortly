@@ -1,21 +1,29 @@
 import PropTypes from 'prop-types';
-import { Link, Button } from 'react-aria-components';
+import { Link, Button, type PressEvent } from 'react-aria-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars } from '@fortawesome/free-solid-svg-icons';
-// import { useEffect } from 'react';
+import { type FC } from 'react';
 
-interface NavLinks {
+export interface NavLinks {
     links: Array<NavLink>
 }
 
-interface NavLink {
+export interface NavLink {
     url: string,
     label: string
 }
 
 const baseURL = import.meta.env.BASE_URL;
 
-export default function Navbar ({ toggle, isOpen, links }: NavLinks) {
+type ToggleFunction = (_e: PressEvent) => void;
+
+interface NavbarProps {
+    toggle: ToggleFunction,
+    isOpen: boolean,
+    links: Array<NavLink>
+}
+
+export const Navbar: FC<NavbarProps> = ({ toggle, isOpen, links }) => {
     return (
         <div className='lg:ml-12 lg:w-full w-auto'>
             <Button onPress={toggle} className="lg:hidden outline-none">
@@ -44,5 +52,7 @@ export default function Navbar ({ toggle, isOpen, links }: NavLinks) {
 Navbar.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     toggle: PropTypes.func.isRequired,
-    links: PropTypes.arrayOf(PropTypes.object).isRequired
+    links: PropTypes.arrayOf(PropTypes.any).isRequired
 }
+
+export default Navbar;

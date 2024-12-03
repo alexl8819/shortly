@@ -1,13 +1,18 @@
-import { useState } from 'react';
+import { useState, type FC } from 'react';
 import { Link } from 'react-aria-components';
 import PropTypes from 'prop-types';
 
 import logo from '../assets/logo.svg';
 import Navbar from './Navbar.tsx';
+import { type NavLink } from './Navbar.tsx';
 
 const baseURL = import.meta.env.BASE_URL;
 
-export default function Header ({ links }) {
+interface HeaderProps {
+  links: Array<NavLink>
+}
+
+export const Header: FC<HeaderProps> = ({ links }) => {
   const [isOpened, setIsOpened] = useState<boolean>(false);
   const toggleNav = () => setIsOpened(!isOpened);
 
@@ -25,5 +30,7 @@ export default function Header ({ links }) {
 }
 
 Header.propTypes = {
-  links: PropTypes.arrayOf(PropTypes.object).isRequired
+  links: PropTypes.arrayOf(PropTypes.any).isRequired
 }
+
+export default Header;

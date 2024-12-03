@@ -1,7 +1,15 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FC } from 'react';
 
-export default function Card({ id, title, icon, alt, description }) {
+interface CardProps {
+	id: number,
+	title: string,
+	icon: string,
+	alt: string,
+	description: string
+}
+
+export const Card: FC<CardProps> = ({ id, title, icon, alt, description }) => {
 	const [iconImg, setIconImg] = useState(null);
 
 	useEffect(() => {
@@ -33,9 +41,11 @@ export default function Card({ id, title, icon, alt, description }) {
 }
 
 Card.propTypes = {
-	id: PropTypes.number,
-	title: PropTypes.string,
-	icon: PropTypes.string,
-	alt: PropTypes.string,
-	description: PropTypes.string
+	id: PropTypes.number.isRequired,
+	title: PropTypes.string.isRequired,
+	icon: PropTypes.string.isRequired,
+	alt: PropTypes.string.isRequired,
+	description: PropTypes.string.isRequired
 };
+
+export default Card;

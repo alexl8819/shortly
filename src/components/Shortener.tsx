@@ -10,7 +10,7 @@ import delay from 'delay';
 import { nanoid } from 'nanoid';
 import clipboard from 'clipboardy';
 import PropTypes from 'prop-types';
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type FC } from 'react';
 
 interface ShortenedUrl {
     original: string,
@@ -33,11 +33,6 @@ export default function ShortenerWidget () {
             shortened: `https://re.link/${nanoid(6)}`
         }]);
     };
-    
-    const handleInputChange = ({ target }) => {
-        const longUrl = target.value;
-        setLongUrlInput(longUrl);
-    };
 
     return (
         <>
@@ -51,7 +46,7 @@ export default function ShortenerWidget () {
                         className={`rounded outline-none py-3 px-6 w-full ${longUrlInput.length > 0 ? 'invalid:border-2 invalid:border-red': 'border-none'}`}
                         //pattern='^https?:\\/\\/(?:www\\.)?[a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}(?:\\/[^\\s]*)?$'
                         placeholder='Shorten a link here...'
-                        onChange={handleInputChange}
+                        onChange={({ target }) => setLongUrlInput(target.value)}
                     />
                     <FieldError className='mt-[0.25rem] font-medium text-[0.75rem] tracking-[0.005em] leading-[1.125rem] text-red italic'>
                         {
@@ -70,7 +65,11 @@ export default function ShortenerWidget () {
     )
 }
 
-function ShortenedLinkPreview ({ shorten }) {
+interface ShortenedLinkPreviewProps {
+    shorten: ShortenedUrl
+}
+
+const ShortenedLinkPreview: FC<ShortenedLinkPreviewProps> = ({ shorten }) => {
     const [hasCopied, setHasCopied] = useState(false);
 
     const { original, shortened } = shorten;
@@ -100,5 +99,5 @@ function ShortenedLinkPreview ({ shorten }) {
 }
 
 ShortenedLinkPreview.propTypes = {
-    shorten: PropTypes.object.isRequired
+    shorten: PropTypes.any.isRequired
 };
