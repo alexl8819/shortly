@@ -54,7 +54,13 @@ export default function ShortenerWidget () {
                         }
                     </FieldError>
                 </TextField>
-                <Input type='submit' className='lg:mt-0 mt-4 lg:ml-6 py-3 lg:px-12 px-6 rounded-lg hover:bg-light-cyan bg-cyan text-white lg:w-auto lg:max-h-[3.25rem] w-full cursor-pointer disabled:cursor-not-allowed' value='Shorten It!' disabled={longUrlInput.length === 0}/>
+                <Button 
+                    type='submit' 
+                    className='lg:mt-0 mt-4 lg:ml-6 lg:py-0 py-3 lg:px-12 px-6 rounded-lg hover:bg-light-cyan bg-cyan text-white lg:w-auto lg:max-h-[3.15rem] text-center w-full cursor-pointer disabled:cursor-not-allowed'
+                    isDisabled={longUrlInput.length === 0}
+                >
+                    Shorten
+                </Button>
             </Form>
             <ul className='mt-6 list-none'>
                 { 
