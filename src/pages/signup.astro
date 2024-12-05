@@ -2,17 +2,19 @@
 export const prerender = false;
 
 import Layout from "../layouts/Layout.astro";
-import Header from '../components/Header.tsx';
+import Header from '../components/Header';
 import Footer from '../components/Footer.astro';
 
 import RegisterForm from "../components/RegisterForm";
 
 const { cookies, redirect } = Astro;
 
+const siteKey = import.meta.env.PUBLIC_HCAPTCHA_SITE_KEY;
+
 const accessToken = cookies.get("sb-access-token");
 const refreshToken = cookies.get("sb-refresh-token");
 
-const isLoggedIn = accessToken && refreshToken || false;
+const isLoggedIn = typeof accessToken !== 'undefined' && typeof refreshToken !== 'undefined';
 
 if (isLoggedIn) {
   return redirect("/dashboard");
@@ -29,7 +31,7 @@ if (isLoggedIn) {
             <h1 class="mb-6 xl:text-[5rem] lg:text-[3.5rem] text-[2.625rem] xl:leading-[5.625rem] lg:leading-[4rem] leading-[3rem] tracking-[-0.066em] font-bold text-very-dark-blue">
                 Sign Up
             </h1>
-            <RegisterForm client:load siteKey={import.meta.env.HCAPTCHA_SITE_KEY} />
+            <RegisterForm client:load siteKey={siteKey} />
         </section>
     </main>
     <Footer showAdSection={false} directory={[

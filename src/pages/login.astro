@@ -2,7 +2,7 @@
 export const prerender = false;
 
 import Layout from "../layouts/Layout.astro";
-import Header from '../components/Header.tsx';
+import Header from '../components/Header';
 import Footer from '../components/Footer.astro';
 
 import LoginForm from "../components/LoginForm";
@@ -12,7 +12,7 @@ const { cookies, redirect, request } = Astro;
 const accessToken = cookies.get("sb-access-token");
 const refreshToken = cookies.get("sb-refresh-token");
 
-const isLoggedIn = accessToken && refreshToken || false;
+const isLoggedIn = typeof accessToken !== 'undefined' && typeof refreshToken !== 'undefined';
 
 if (isLoggedIn) {
   return redirect("/dashboard");
