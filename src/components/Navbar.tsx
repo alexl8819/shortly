@@ -19,11 +19,26 @@ type ToggleFunction = (_e: PressEvent) => void;
 
 interface NavbarProps {
     toggle: ToggleFunction,
+    isLoggedIn: boolean,
     isOpen: boolean,
     links: Array<NavLink>
 }
 
-export const Navbar: FC<NavbarProps> = ({ toggle, isOpen, links }) => {
+export const Navbar: FC<NavbarProps> = ({ toggle, isLoggedIn, isOpen, links }) => {
+    const handleLogout = async () => {
+        let logoutResponse;
+
+        try {
+            logoutResponse = await fetch('/api/auth/logout', {
+                method: 'POST'
+            });    
+        } catch (err) {
+            console.error(err);
+            return;
+        }
+
+        window.location.replace('/');
+    }
     return (
         <div className='lg:ml-12 lg:w-full w-auto'>
             <Button onPress={toggle} className="lg:hidden outline-none">
@@ -40,8 +55,14 @@ export const Navbar: FC<NavbarProps> = ({ toggle, isOpen, links }) => {
                     }
                     </ul>
                     <div className='lg:pt-0 pt-8 lg:space-x-7 lg:w-auto flex lg:flex-row flex-col justify-center items-center text-center'>
-                        <Link className='font-bold text-[1.125rem] hover:text-very-dark-blue lg:text-grayish-violet text-white' href={baseURL + 'login'}>Login</Link>
-                        <Link className='lg:mt-0 mt-6 py-2 px-6 rounded-full bg-cyan hover:bg-light-cyan font-bold text-[1.125rem] text-white w-full' href={baseURL + 'sign-up'}>Sign Up</Link>
+                        {
+                            !isLoggedIn ? (
+                                <>
+                                    <Link className='font-bold text-[1.125rem] hover:text-very-dark-blue lg:text-grayish-violet text-white' href={baseURL + 'login'}>Login</Link>
+                                    <Link className='lg:mt-0 mt-6 py-2 px-6 rounded-full bg-cyan hover:bg-light-cyan font-bold text-[1.125rem] text-white w-full' href={baseURL + 'signup'}>Sign Up</Link>
+                                </>
+                            )  : <Button onPress={handleLogout} className='lg:mt-0 mt-6 py-2 px-6 rounded-full bg-cyan hover:bg-light-cyan font-bold text-[1.125rem] text-white w-full'>Logout</Button>  
+                        }
                     </div>
                 </nav>
             </div>
@@ -51,6 +72,7 @@ export const Navbar: FC<NavbarProps> = ({ toggle, isOpen, links }) => {
 
 Navbar.propTypes = {
     isOpen: PropTypes.bool.isRequired,
+    isLoggedIn: PropTypes.bool.isRequired,
     toggle: PropTypes.func.isRequired,
     links: PropTypes.arrayOf(PropTypes.any).isRequired
 }

@@ -9,10 +9,11 @@ import { type NavLink } from './Navbar.tsx';
 const baseURL = import.meta.env.BASE_URL;
 
 interface HeaderProps {
-  links: Array<NavLink>
+  links: Array<NavLink>,
+  isLoggedIn: boolean
 }
 
-export const Header: FC<HeaderProps> = ({ links }) => {
+export const Header: FC<HeaderProps> = ({ links, isLoggedIn }) => {
   const [isOpened, setIsOpened] = useState<boolean>(false);
   const toggleNav = () => setIsOpened(!isOpened);
 
@@ -23,14 +24,15 @@ export const Header: FC<HeaderProps> = ({ links }) => {
           <img className="header__logo" src={logo.src} alt="shortly - url shortener" loading="eager" />
         </Link>
 
-        <Navbar isOpen={isOpened} toggle={toggleNav} links={links} />
+        <Navbar isLoggedIn={isLoggedIn} isOpen={isOpened} toggle={toggleNav} links={links} />
       </div>
     </header>
   );
 }
 
 Header.propTypes = {
-  links: PropTypes.arrayOf(PropTypes.any).isRequired
+  links: PropTypes.arrayOf(PropTypes.any).isRequired,
+  isLoggedIn: PropTypes.bool.isRequired
 }
 
 export default Header;
