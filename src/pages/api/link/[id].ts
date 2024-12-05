@@ -16,7 +16,19 @@ export const GET: APIRoute = async ({ params, redirect }) => {
     }
 
     // TODO: collect analytics
-    const { originalUrl } = camelcaseKeys(data[0]);
 
-    return redirect(originalUrl);
+    let row;
+
+    if (data.length) {
+        console.log(data);
+        row = camelcaseKeys(data[0]);
+    }
+
+    if (!row) {
+        return new Response(JSON.stringify({
+            error: 'Failed to retrieve url'
+        }));
+    }
+
+    return redirect(row.originalUrl);
 }
