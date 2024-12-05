@@ -7,31 +7,47 @@ import {
     Input 
 } from 'react-aria-components';
 import delay from 'delay';
-import { nanoid } from 'nanoid';
 import clipboard from 'clipboardy';
 import PropTypes from 'prop-types';
-import { useState, type FormEvent, type FC } from 'react';
+import { useState, useRef, type FormEvent, type FC } from 'react';
 
 interface ShortenedUrl {
     original: string,
     shortened: string
 }
 
-export default function ShortenerWidget () {
+interface ShortenerProps {
+    isLoggedIn: boolean
+}
+
+export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
     const [longUrlInput,setLongUrlInput] = useState<string>('');
     const [shortenedLinks, setShortenedLinks] = useState<Array<ShortenedUrl>>([]);
 
-    const queueLink = (e: FormEvent) => {
+    const queueLink = async (e: FormEvent) => {
         e.preventDefault();
 
         if (!longUrlInput.length) {
             return;
         }
+
+        if (!isLoggedIn) {
+            // TODO: show modal requiring login
+            throw new Error('Not logged in');
+        }
+
+        const shortened = await createShortUrl(longUrlInput);
+
+        if (!shortened) {
+            throw new Error('Failed to create shortened url');
+        }
         
         setShortenedLinks((prev) => [...prev, {
             original: longUrlInput,
-            shortened: `https://re.link/${nanoid(6)}`
+            shortened
         }]);
+        
+        setLongUrlInput('');
     };
 
     return (
@@ -41,10 +57,11 @@ export default function ShortenerWidget () {
                     <Label htmlFor='link' className='sr-only'>Enter URL to shorten</Label>
                     <Input 
                         type='url' 
-                        id='link' 
-                        name='link' 
+                        id='link-create-input' 
+                        name='link-create-input' 
                         className={`rounded outline-none py-3 px-6 w-full ${longUrlInput.length > 0 ? 'invalid:border-2 invalid:border-red': 'border-none'}`}
                         //pattern='^https?:\\/\\/(?:www\\.)?[a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}(?:\\/[^\\s]*)?$'
+                        value={longUrlInput}
                         placeholder='Shorten a link here...'
                         onChange={({ target }) => setLongUrlInput(target.value)}
                     />
@@ -57,7 +74,7 @@ export default function ShortenerWidget () {
                 <Button 
                     type='submit' 
                     className='lg:mt-0 mt-4 lg:ml-6 lg:py-0 py-3 lg:px-12 px-6 rounded-lg hover:bg-light-cyan bg-cyan text-white lg:w-auto w-full lg:max-h-[3.15rem] text-center cursor-pointer disabled:cursor-not-allowed'
-                    isDisabled={longUrlInput.length === 0}
+                    /*isDisabled={longUrlInput.length === 0}*/
                 >
                     Shorten
                 </Button>
@@ -70,6 +87,8 @@ export default function ShortenerWidget () {
         </>
     )
 }
+
+export default ShortenerWidget;
 
 interface ShortenedLinkPreviewProps {
     shorten: ShortenedUrl
@@ -88,10 +107,10 @@ const ShortenedLinkPreview: FC<ShortenedLinkPreviewProps> = ({ shorten }) => {
     };
     
     return (
-        <li className='mb-6 flex lg:flex-row flex-col bg-white text-left'>
-            <div className='lg:px-4 lg:mb-2 mb-4 flex lg:flex-row flex-col lg:justify-between items-center lg:space-y-0 space-y-2 lg:divide-none divide-y divide-grayish-violet w-full'>
-                <p className='lg:text-left font-medium lg:text-[1.25rem] text-[1rem] leading-9 text-very-dark-blue w-full'>{ original }</p>
-                <p className='lg:pt-0 pt-2 lg:text-right font-medium lg:text-[1.25rem] text-[1rem] text-cyan w-full'>{ shortened }</p>
+        <li className='mb-6 flex lg:flex-row flex-col bg-white text-left w-full'>
+            <div className='lg:px-4 lg:mb-2 mb-4 flex lg:flex-row flex-col lg:justify-between items-center lg:space-y-0 space-y-2 lg:divide-none divide-y divide-grayish-violet overflow-x-auto w-full'>
+                <div className='lg:text-left font-medium lg:text-[1.25rem] text-[1rem] leading-9 text-very-dark-blue lg:w-1/2 w-full truncate'>{ original }</div>
+                <div className='lg:pt-0 pt-2 lg:text-right font-medium lg:text-[1.25rem] text-[1rem] text-cyan lg:w-1/2 w-full'>{ shortened }</div>
             </div>
             <Button 
                 onPress={copyShortened} 
@@ -107,3 +126,28 @@ const ShortenedLinkPreview: FC<ShortenedLinkPreviewProps> = ({ shorten }) => {
 ShortenedLinkPreview.propTypes = {
     shorten: PropTypes.any.isRequired
 };
+
+async function createShortUrl (originalUrl: string) {
+    let shortUrlResponse;
+
+    const serializedBody = new URLSearchParams();
+    serializedBody.append('originalUrl', originalUrl);
+
+    try {
+        shortUrlResponse = await fetch('/api/link', {
+            method: 'POST',
+            body: serializedBody
+        });
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+
+    if (shortUrlResponse.status !== 200) {
+        console.error(shortUrlResponse.status);
+        return null;
+    }
+
+    const shortUrlData = await shortUrlResponse.json();
+    return shortUrlData['url'];
+}
