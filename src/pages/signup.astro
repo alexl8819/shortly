@@ -1,0 +1,62 @@
+---
+export const prerender = false;
+
+import Layout from "../layouts/Layout.astro";
+import Header from '../components/Header.tsx';
+import Footer from '../components/Footer.astro';
+
+import RegisterForm from "../components/RegisterForm";
+
+const { cookies, redirect } = Astro;
+
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+const isLoggedIn = accessToken && refreshToken || false;
+
+if (isLoggedIn) {
+  return redirect("/dashboard");
+}
+---
+<Layout title="Shortly - Sign Up">
+    <Header client:load links={[
+		{ label: 'Features', url: 'features' }, 
+		{ label: 'Pricing', url: 'pricing' }, 
+		{ label: 'Resources', url: 'resources' }
+	]} isLoggedIn={isLoggedIn} />
+    <main class="lg:px-[7.375rem] xl:px-[10.375rem] lg:mt-6 px-6 flex flex-col justify-center items-center min-h-screen w-full">
+        <section class="lg:w-3/4 w-full text-center">
+            <h1 class="mb-6 xl:text-[5rem] lg:text-[3.5rem] text-[2.625rem] xl:leading-[5.625rem] lg:leading-[4rem] leading-[3rem] tracking-[-0.066em] font-bold text-very-dark-blue">
+                Sign Up
+            </h1>
+            <RegisterForm client:load siteKey={import.meta.env.HCAPTCHA_SITE_KEY} />
+        </section>
+    </main>
+    <Footer showAdSection={false} directory={[
+		{ 
+			section: 'Features',
+			links: [
+				{ label: 'Link Shortening', url: 'shorten' },
+				{ label: 'Branded Links', url: 'branded' },
+				{ label: 'Analytics', url: 'analytics' }
+			]
+		},
+		{
+			section: 'Resources',
+			links: [
+				{ label: 'Blog', url: 'blog' },
+				{ label: 'Developers', url: 'developers' },
+				{ label: 'Support', url: 'support' }
+			]
+		},
+		{
+			section: 'Company',
+			links: [
+				{ label: 'About', url: 'about' },
+				{ label: 'Our Team', url: 'team' },
+				{ label: 'Careers', url: 'careers' },
+				{ label: 'Contact', url: 'contact' }
+			]
+		}
+	]} />
+</Layout>
