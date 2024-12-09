@@ -34,8 +34,8 @@ export default function LinkTable () {
 			    </thead>
 			    <tbody>
                     {
-                        links ? links.map((link, index) => (
-                            <tr key={index} className='text-center text-very-dark-blue hover:text-grayish-violet divide-y divide-gray h-10 cursor-pointer'>
+                        links ? links.map((link) => (
+                            <tr key={link.id} className='text-center text-very-dark-blue hover:text-grayish-violet divide-y divide-gray h-10 cursor-pointer'>
 				                <td className='truncate overflow-x-hidden border-t border-gray w-1/2'>
                                     <Link href={link.originalUrl} target='_blank'>{ link.originalUrl }</Link>
                                 </td>
