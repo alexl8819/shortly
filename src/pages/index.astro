@@ -32,7 +32,7 @@ const isLoggedIn = typeof accessToken !== 'undefined' && typeof refreshToken !==
 			</div>
 		</section>
 		<section class="mt-[5.5rem]">
-			<ShortenerWidget isLoggedIn={isLoggedIn} client:visible />
+			<ShortenerWidget isLoggedIn={isLoggedIn} client:only="react" />
 		</section>
 		<section class="mt-20 text-center">
 			<div>

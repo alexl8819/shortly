@@ -12,10 +12,10 @@ supabaseClient.auth.onAuthStateChange((event) => {
   } else if (event === 'SIGNED_OUT') {
     // handle sign out event
     supabaseClient.auth.stopAutoRefresh();
-  } else if (event === 'TOKEN_REFRESHED') {
+  } /*else if (event === 'TOKEN_REFRESHED') {
     // handle token refreshed event
     console.log('token refreshed');
-  } /*else if (event === 'INITIAL_SESSION') {
+  } else if (event === 'INITIAL_SESSION') {
     // handle initial session
   } else if (event === 'PASSWORD_RECOVERY') {
     // handle password recovery event

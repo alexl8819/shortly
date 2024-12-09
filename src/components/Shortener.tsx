@@ -6,10 +6,14 @@ import {
     Label, 
     Input 
 } from 'react-aria-components';
+import { ToastContainer, toast } from 'react-toastify';
 import delay from 'delay';
 import clipboard from 'clipboardy';
 import PropTypes from 'prop-types';
-import { useState, useRef, type FormEvent, type FC } from 'react';
+import { useState, type FormEvent, type FC } from 'react';
+
+import 'react-toastify/dist/ReactToastify.css';
+import { useShortener } from '../contexts/ShortenerContext';
 
 interface ShortenedUrl {
     original: string,
@@ -20,9 +24,14 @@ interface ShortenerProps {
     isLoggedIn: boolean
 }
 
+const notifySuccess = (linkAdded: string) => toast(`Successfully created for ${linkAdded}`, { role: 'alert' });
+
 export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
-    const [longUrlInput,setLongUrlInput] = useState<string>('');
+    const { total, setCursor } = useShortener();
+
+    const [longUrlInput, setLongUrlInput] = useState<string>('');
     const [shortenedLinks, setShortenedLinks] = useState<Array<ShortenedUrl>>([]);
+    const currentPath = window.location.pathname.slice(1);
 
     const queueLink = async (e: FormEvent) => {
         e.preventDefault();
@@ -32,7 +41,7 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
         }
 
         if (!isLoggedIn) {
-            // TODO: show modal requiring login
+            // TODO: show modal requiring login or redirect
             throw new Error('Not logged in');
         }
 
@@ -46,8 +55,13 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
             original: longUrlInput,
             shortened
         }]);
+
+        notifySuccess(longUrlInput);
         
         setLongUrlInput('');
+
+        const last = new Array(Math.ceil(total / 10)).length - 1;
+        setCursor(last);
     };
 
     return (
@@ -79,11 +93,16 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
                     Shorten
                 </Button>
             </Form>
-            <ul className='mt-6 list-none'>
-                { 
-                    shortenedLinks.map((shorten: ShortenedUrl, index: number) => (<ShortenedLinkPreview key={index} shorten={shorten} />))
-                }
-            </ul>
+            {
+                currentPath !== 'dashboard' ? (
+                    <ul className='mt-6 list-none'>
+                        { 
+                            shortenedLinks.map((shorten: ShortenedUrl, index: number) => (<ShortenedLinkPreview key={index} shorten={shorten} />))
+                        }
+                    </ul>
+                ) : null
+            }
+            <ToastContainer />
         </>
     )
 }

@@ -1,9 +1,9 @@
 ---
-import { Image } from 'astro:assets';
-
 import Layout from '../layouts/Layout.astro';
-import Header from '../components/Header.tsx';
+import Header from '../components/Header';
 import Footer from '../components/Footer.astro';
+import ShortenerContextWrapper from '../components/ContextWrapper';
+
 import { supabaseClient } from '../lib/client';
 
 const accessToken = Astro.cookies.get("sb-access-token");
@@ -13,7 +13,7 @@ if (!accessToken || !refreshToken) {
   return Astro.redirect("/login");
 }
 
-const isLoggedIn = accessToken != null && refreshToken != null;
+const isLoggedIn = typeof accessToken !== 'undefined' && typeof refreshToken !== 'undefined';
 
 let session;
 
@@ -53,8 +53,9 @@ const email = session.data.user?.email;
 		{ label: 'Pricing', url: 'pricing' }, 
 		{ label: 'Resources', url: 'resources' }
 	]} isLoggedIn={isLoggedIn}} />
-	<main class="lg:px-[7.375rem] xl:px-[10.375rem] lg:mt-6 px-6">
-		<h1 class="text-left">Dashboard: {email}</h1>
+	<main class="lg:px-[7.375rem] xl:px-[10.375rem] px-6 py-12 lg:mt-6">
+		<h1 class="text-left text-lg">Welcome back <span class="font-bold">{ email }</span></h1>
+		<ShortenerContextWrapper client:only="react" />
 	</main>
 	<Footer directory={[
 		{ 

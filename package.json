@@ -32,8 +32,10 @@
     "react-aria-components": "^1.4.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.2",
+    "react-toastify": "^10.0.6",
     "tailwindcss": "^3.4.15",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "ua-parser-js": "^2.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
