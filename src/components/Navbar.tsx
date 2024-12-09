@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { Link, Button, type PressEvent } from 'react-aria-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons';
 import { type FC } from 'react';
 
