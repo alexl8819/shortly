@@ -1,8 +1,10 @@
 import type { APIRoute } from "astro";
 import { nanoid } from 'nanoid';
 import decamelizeKeys from 'decamelize-keys';
-import { supabaseClient } from "../../lib/client";
 import camelcaseKeys from "camelcase-keys";
+
+import { supabaseClient } from "../../lib/client";
+import { VALID_URL } from "../../lib/constants";
 
 export const GET: APIRoute = async ({ request }) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser();
@@ -64,6 +66,12 @@ export const POST: APIRoute = async ({ request }) => {
     if (!originalUrl) {
         return new Response(JSON.stringify({
             error: 'Missing url'
+        }), { status: 400 });
+    }
+
+    if (!VALID_URL.test(originalUrl)) {
+        return new Response(JSON.stringify({
+            error: 'originalUrl is not a valid URL'
         }), { status: 400 });
     }
 
