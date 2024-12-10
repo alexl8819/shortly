@@ -12,8 +12,9 @@ import clipboard from 'clipboardy';
 import PropTypes from 'prop-types';
 import { useState, type FormEvent, type FC } from 'react';
 
-import 'react-toastify/dist/ReactToastify.css';
 import { useShortener } from '../contexts/ShortenerContext';
+import { VALID_URL } from '../lib/constants';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface ShortenedUrl {
     original: string,
@@ -24,10 +25,12 @@ interface ShortenerProps {
     isLoggedIn: boolean
 }
 
-const notifySuccess = (linkAdded: string) => toast(`Successfully created for ${linkAdded}`, { role: 'alert' });
+const notifySuccess = (linkAdded: string) => toast.success(`Created new shortened url: ${linkAdded}`, { 
+    role: 'alert'
+});
 
 export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
-    const { total, setCursor } = useShortener();
+    const { total, cursor, setCursor } = useShortener();
 
     const [longUrlInput, setLongUrlInput] = useState<string>('');
     const [shortenedLinks, setShortenedLinks] = useState<Array<ShortenedUrl>>([]);
@@ -36,13 +39,13 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
     const queueLink = async (e: FormEvent) => {
         e.preventDefault();
 
-        if (!longUrlInput.length) {
+        if (!longUrlInput.length || !VALID_URL.test(longUrlInput)) {
             return;
         }
 
         if (!isLoggedIn) {
-            // TODO: show modal requiring login or redirect
-            throw new Error('Not logged in');
+            window.location.replace('/login');
+            return;
         }
 
         const shortened = await createShortUrl(longUrlInput);
@@ -56,11 +59,16 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
             shortened
         }]);
 
-        notifySuccess(longUrlInput);
+        notifySuccess(shortened);
         
         setLongUrlInput('');
 
         const last = new Array(Math.ceil(total / 10)).length - 1;
+        
+        if (cursor === last) {
+            setCursor(-1);
+        }
+        
         setCursor(last);
     };
 
@@ -74,7 +82,6 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
                         id='link-create-input' 
                         name='link-create-input' 
                         className={`rounded outline-none py-3 px-6 w-full ${longUrlInput.length > 0 ? 'invalid:border-2 invalid:border-red': 'border-none'}`}
-                        //pattern='^https?:\\/\\/(?:www\\.)?[a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}(?:\\/[^\\s]*)?$'
                         value={longUrlInput}
                         placeholder='Shorten a link here...'
                         onChange={({ target }) => setLongUrlInput(target.value)}
@@ -102,7 +109,7 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
                     </ul>
                 ) : null
             }
-            <ToastContainer />
+            <ToastContainer autoClose={10000} stacked={true} draggable={false} />
         </>
     )
 }
@@ -147,10 +154,10 @@ ShortenedLinkPreview.propTypes = {
 };
 
 async function createShortUrl (originalUrl: string) {
-    let shortUrlResponse;
-
     const serializedBody = new URLSearchParams();
     serializedBody.append('originalUrl', originalUrl);
+
+    let shortUrlResponse;
 
     try {
         shortUrlResponse = await fetch('/api/link', {
@@ -162,7 +169,7 @@ async function createShortUrl (originalUrl: string) {
         return null;
     }
 
-    if (shortUrlResponse.status !== 200) {
+    if (!shortUrlResponse.ok) {
         console.error(shortUrlResponse.status);
         return null;
     }

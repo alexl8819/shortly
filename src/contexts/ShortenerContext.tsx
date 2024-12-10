@@ -10,12 +10,14 @@ const ShortenerContext = createContext<{
     links: Array<any> | null,
     total: number,
     cursor: number,
-    setCursor: Function
+    setCursor: Function,
+    hasNew: boolean
 }>({
     links: [],
     total: 0,
     cursor: 0,
-    setCursor: () => {}
+    setCursor: () => {},
+    hasNew: false
 });
 
 export const useShortener = () => useContext(ShortenerContext);
@@ -24,12 +26,18 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
     const [cursor, setCursor] = useState<number>(0);
     const [total, setTotal] = useState<number>(0);
     const [links, setLinks] = useState<Array<any> | null>(null);
+    const [hasNew, setHasNew] = useState<boolean>(false);
 
-    const getOffset = (page: number, limit: number = 10) => {
-        return page * limit;
-    }
+    const getOffset = (page: number, limit: number = 10) => page * limit;
 
     const fetchAllLinks = async () => {
+        setHasNew(false);
+
+        if (cursor < 0) {
+            setLinks([]);
+            return;
+        }
+
         let linkApiResponse;
 
         try {
@@ -46,7 +54,12 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
         const { totalRows, rows } = await linkApiResponse.json();
 
         setLinks(links ? rows : (_) => [...rows]);
-        setTotal(totalRows);
+        setTotal((prev) => {
+            if (prev > 0 && prev !== totalRows) {
+                setHasNew(true);
+            }
+            return totalRows;
+        });
     };
   
     useEffect(() => {
@@ -58,7 +71,8 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
             links,
             total,
             cursor,
-            setCursor
+            setCursor,
+            hasNew
         }}>
             { children }
         </ShortenerContext.Provider>
