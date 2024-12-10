@@ -23,14 +23,25 @@ export const POST: APIRoute = async ({ request, redirect }) => {
         }), { status: 500 });
     }
     
-    const { error } = await supabaseClient.auth.signUp({
+    const { data, error: signUpError } = await supabaseClient.auth.signUp({
         email,
         password,
     });
 
-    if (error) {
+    if (signUpError) {
         return new Response(JSON.stringify({
-            error: error.message
+            error: signUpError.message
+        }), { status: 500 });
+    }
+
+    const { error: userError } = await supabaseClient.from('Users').insert({
+        user_id: data.user?.id
+    });
+
+    if (userError) {
+        console.error(userError);
+        return new Response(JSON.stringify({
+            error: 'Failed to create new user'
         }), { status: 500 });
     }
     
