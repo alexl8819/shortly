@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Button, Link } from 'react-aria-components';
+import { Link } from 'react-aria-components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faLink } from '@fortawesome/free-solid-svg-icons';
+
 import { useShortener } from '../contexts/ShortenerContext';
+import { Pagination } from './Pagination';
 
 interface LinkRow {
     id: number,
@@ -10,17 +13,22 @@ interface LinkRow {
 }
 
 export default function LinkTable () {
-    const { total, links, cursor, setCursor } = useShortener();
+    const { 
+        total, 
+        links, 
+        cursor, 
+        setCursor,
+        hasNew
+    } = useShortener();
 
-    // TODO: display skeleton
-    if (!links) {
-        return null;
+    if (!links || !links.length) {
+        return (
+            <div className='py-3 flex flex-col justify-center items-center w-full'>
+                <FontAwesomeIcon icon={faLink} size="6x" style={{color: 'hsl(0, 0%, 75%)'}} />
+                <h2 className='mt-6 text-center lg:text-[3.5rem] text-[2.625rem] font-bold tracking-[-0.066em] text-very-dark-blue'>No links found.</h2>
+            </div>
+        );
     }
-
-    const changeCursor = (page: number) => setCursor(page);
-
-    // TODO: move to pagination component?
-    const pages = new Array(Math.ceil(total / 10)).fill(1);
     
     return (
         <>
@@ -34,8 +42,8 @@ export default function LinkTable () {
 			    </thead>
 			    <tbody>
                     {
-                        links ? links.map((link) => (
-                            <tr key={link.id} className='text-center text-very-dark-blue hover:text-grayish-violet divide-y divide-gray h-10 cursor-pointer'>
+                        links ? links.map((link: LinkRow, index: number) => (
+                            <tr key={link.id} className={`${hasNew && (links.length - 1) === index ? 'bg-cyan text-white animate-pulse opacity-75' : ''} text-center text-very-dark-blue hover:text-grayish-violet divide-y divide-gray h-10 cursor-pointer`}>
 				                <td className='truncate overflow-x-hidden border-t border-gray w-1/2'>
                                     <Link href={link.originalUrl} target='_blank'>{ link.originalUrl }</Link>
                                 </td>
@@ -47,20 +55,7 @@ export default function LinkTable () {
                     }
 		        </tbody>
 		    </table>
-            <ol className='mt-4 list-none flex flex-row justify-center items-center space-x-6 w-full'>
-                {
-                    pages ? pages.map((_, index) => (
-                        <li key={index} className={`${cursor === index ? 'font-bold' : ''} disabled:cursor-not-allowed`}>
-                            <Button 
-                                onPress={(_) => changeCursor(index)}
-                                isDisabled={cursor === index}
-                            >
-                                { (index + 1) }
-                            </Button>
-                        </li>
-                    )) : null
-                }
-            </ol>
+            <Pagination curPage={cursor} nextPage={setCursor} total={total} />
         </>
     );
 }
