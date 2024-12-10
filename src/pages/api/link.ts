@@ -44,6 +44,7 @@ export const GET: APIRoute = async ({ request }) => {
             if (!totalRows) {
                 totalRows = row.totalRows;
             }
+            row.shortUrl = `${import.meta.env.REDIRECT_LINK_DOMAIN}${row.shortId}`;
             const { totalRows: tRows, ...otherKeys } = row;
             return Object.assign({}, otherKeys);
         });
