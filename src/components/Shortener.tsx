@@ -25,7 +25,7 @@ interface ShortenerProps {
     isLoggedIn: boolean
 }
 
-const notifySuccess = (linkAdded: string) => toast.success(`Created new shortened url: ${linkAdded}`, { 
+const notifySuccess = (linkAdded: string) => toast.success(`Shortened URL (${linkAdded}) has been copied to clipboard`, { 
     role: 'alert'
 });
 
@@ -59,8 +59,8 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
             shortened
         }]);
 
-        notifySuccess(shortened);
-        
+        await clipboard.write(shortened);
+        notifySuccess(shortened);        
         setLongUrlInput('');
 
         const last = new Array(Math.ceil(total / 10)).length - 1;
@@ -109,7 +109,13 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
                     </ul>
                 ) : null
             }
-            <ToastContainer autoClose={10000} stacked={true} draggable={false} />
+            <ToastContainer 
+                autoClose={10000}
+                stacked={true}
+                draggable={false}
+                hideProgressBar={false}
+                closeOnClick={true}
+            />
         </>
     )
 }
