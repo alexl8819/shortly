@@ -26,7 +26,7 @@ export const GET: APIRoute = async ({ request }) => {
         'p_limit': 10,
         'p_offset': offset,
         'userid': userData.user.id
-    })
+    });
     
     if (error) {
         console.error(error);
@@ -71,7 +71,7 @@ export const POST: APIRoute = async ({ request }) => {
     const insertBody = {
         originalUrl,
         shortId,
-        userId: data.user?.id
+        userId: data.user.id
     };
 
     const { error: sqlError } = await supabaseClient.from('Links').insert(decamelizeKeys(insertBody));
