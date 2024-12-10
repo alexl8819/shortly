@@ -1,4 +1,5 @@
 import { Link } from 'react-aria-components';
+import clipboard from 'clipboardy';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLink } from '@fortawesome/free-solid-svg-icons';
 
@@ -9,6 +10,7 @@ interface LinkRow {
     id: number,
     originalUrl: string,
     shortId: string,
+    shortUrl: string,
     clicks?: number
 }
 
@@ -29,6 +31,10 @@ export default function LinkTable () {
             </div>
         );
     }
+
+    const doCopy = async (shortId: string) => {
+        await clipboard.write(shortId); 
+    };
     
     return (
         <>
@@ -47,9 +53,11 @@ export default function LinkTable () {
 				                <td className='truncate overflow-x-hidden border-t border-gray w-1/2'>
                                     <Link href={link.originalUrl} target='_blank'>{ link.originalUrl }</Link>
                                 </td>
-				                <td className=''>{ link.shortId }</td>
+				                <td onClick={(_) => doCopy(link.shortUrl)} className=''>{ link.shortId }</td>
 				                <td className=''>0</td>
-                                <td className='text-red'>Inspect</td>
+                                <td className='text-red'>
+                                    <Link href={`/view/${link.shortId}`} target='_blank'>Inspect</Link>
+                                </td>
 			                </tr>
                         )) : null
                     }
