@@ -32,7 +32,7 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
 
     // TODO: should probably be moved to Analytics as a long running fn?
     if (sourceAddress) {
-        const { data, error } = await supabaseClient.from('Geolocation').select('id').eq('ip_address', sourceAddress).limit(1);
+        const { data, error } = await supabaseClient.from('Geolocation').select('id').eq('ip_address', sourceAddress);
         
         if (error) {
             console.error(error);
@@ -46,12 +46,13 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
             const metadata = await getAddressMetadata(sourceAddress);
 
             if (metadata) {
-                const { error: geoError } =  await supabaseClient.from('Geolocation').insert({
+                const { error: geoError } =  await supabaseClient.from('Geolocation').insert(decamelizeKeys({
                     country: metadata.location.originCountry,
                     state: metadata.location.originState || null,
                     city: metadata.location.originCity || null,
-                    fingerprint: metadata.confidence >= 0.5 ? metadata.fingerprint : null
-                });
+                    fingerprint: metadata.confidence >= 0.5 ? metadata.fingerprint : null,
+                    ipAddress: sourceAddress
+                }));
 
                 if (geoError) {
                     console.error(geoError);
@@ -64,35 +65,48 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
     }
 
     if (userAgent) {
-        const result = await UAParser(userAgent, [CLIs, Emails, Crawlers] as UAParserExt).withFeatureCheck();
+        const { data, error: devicesError } = await supabaseClient.from('Devices').select('id').eq('user_agent', userAgent);
         
-        const isBotLike = isAIBot(result) || isBot(result);
+        if (devicesError) {
+            console.error(devicesError);
+            return new Response(null, { status: 500 });
+        }
 
-        const { type: browserType, /*name, version*/ } = result.browser;
-        const { type: deviceType, vendor, model } = result.device;
+        if (!data || !data.length) {
+            const result = await UAParser(userAgent, [CLIs, Emails, Crawlers] as UAParserExt).withFeatureCheck();
+        
+            const isBotLike = isAIBot(result) || isBot(result);
 
-        const { error: userAgentError } = await supabaseClient.from('Devices').insert(decamelizeKeys({
-            isAutomated: isBotLike,
-            type: deviceType,
-            interface: browserType,
-            model,
-            vendor
-        }));
+            const { type: browserType, name, version } = result.browser;
+            const { type: deviceType, vendor, model } = result.device;
 
-        if (userAgentError) {
-            console.error(userAgentError);
-            return new Response(null, {
-                status: 500
-            });
+            const usedType = deviceType || name;
+
+            const { error: userAgentError } = await supabaseClient.from('Devices').insert(decamelizeKeys({
+                userAgent,
+                isAutomated: isBotLike,
+                type: usedType,
+                interface: browserType,
+                model,
+                vendor,
+                version
+            }));
+
+            if (userAgentError) {
+                console.error(userAgentError);
+                return new Response(null, {
+                    status: 500
+                });
+            }
         }
     }
 
-    const { error: analyicsError } = await supabaseClient.from('Analytics').insert({
+    const { error: analyicsError } = await supabaseClient.from('Analytics').insert(decamelizeKeys({
         link: row.id,
         sourceAddress,
         referrer,
         userAgent
-    });
+    }));
 
     if (analyicsError) {
         console.error(analyicsError);
@@ -120,7 +134,7 @@ async function getAddressMetadata (sourceAddress: string): Promise<AddressMetada
     
     try {
         addressResponse = await fetch(
-            `${import.meta.env.IP_LOOKUP_API}/identify?ip=${sourceAddress}`,
+            `${import.meta.env.IP_LOOKUP_API}identify?ip=${sourceAddress}`,
             {
                 headers: {
                     [import.meta.env.IP_LOOKUP_API_HEADER_KEY]: import.meta.env.IP_LOOKUP_API_HEADER_VALUE
@@ -133,7 +147,7 @@ async function getAddressMetadata (sourceAddress: string): Promise<AddressMetada
         return null;
     }
 
-    if (addressResponse && addressResponse.status !== 200) {
+    if (addressResponse && !addressResponse.ok) {
         return null;
     }
 
