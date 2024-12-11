@@ -1,19 +1,51 @@
 ---
 import { Image } from 'astro:assets';
+import { Link } from 'react-aria-components';
 
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header';
 import Footer from '../components/Footer.astro';
 import ShortenerWidget from '../components/Shortener';
 import CardContainer from '../components/CardContainer.astro';
+import { supabaseClient } from '../lib/client';
 
 import workerIllustration from '../assets/illustration-working.svg';
-import { Link } from 'react-aria-components';
 
 const accessToken = Astro.cookies.get("sb-access-token");
 const refreshToken = Astro.cookies.get("sb-refresh-token");
 
 const isLoggedIn = typeof accessToken !== 'undefined' && typeof refreshToken !== 'undefined';
+
+if (isLoggedIn) {
+	let session;
+
+	try {
+  		session = await supabaseClient.auth.setSession({
+    		refresh_token: refreshToken.value,
+    		access_token: accessToken.value,
+  		});
+
+  		if (session.error) {
+    		Astro.cookies.delete("sb-access-token", {
+      			path: "/",
+    		});
+    		Astro.cookies.delete("sb-refresh-token", {
+      			path: "/",
+    		});
+
+    		return Astro.redirect("/login");
+  		}
+	} catch (error) {
+  		Astro.cookies.delete("sb-access-token", {
+    		path: "/",
+  		});
+  		Astro.cookies.delete("sb-refresh-token", {
+    		path: "/",
+  		});
+
+  		return Astro.redirect("/login");
+	}
+}
 ---
 
 <Layout title="Shortly - Landing">
