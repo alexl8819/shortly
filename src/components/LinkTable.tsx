@@ -56,7 +56,7 @@ export default function LinkTable () {
 				                <td onClick={(_) => doCopy(link.shortUrl)} className=''>{ link.shortId }</td>
 				                <td className=''>0</td>
                                 <td className='text-red'>
-                                    <Link href={`/view/${link.shortId}`} target='_blank'>Inspect</Link>
+                                    <Link href={`/view/${link.shortId}`}>Inspect</Link>
                                 </td>
 			                </tr>
                         )) : null
