@@ -6,6 +6,7 @@ import camelcaseKeys from "camelcase-keys";
 import { supabaseClient } from "../../lib/client";
 import { VALID_URL } from "../../lib/constants";
 
+// TODO: cache non-volatile results
 export const GET: APIRoute = async ({ request }) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser();
 
@@ -39,15 +40,36 @@ export const GET: APIRoute = async ({ request }) => {
     let totalRows: number | null = null;
 
     if (data.length) {
+        const ids: Array<number> = [];
+
         rows = data.map((row: any) => {
             row = camelcaseKeys(row);
+
             if (!totalRows) {
                 totalRows = row.totalRows;
             }
+
             row.shortUrl = `${import.meta.env.REDIRECT_LINK_DOMAIN}${row.shortId}`;
+            ids.push(row.id);
+
             const { totalRows: tRows, ...otherKeys } = row;
             return Object.assign({}, otherKeys);
         });
+
+        const { data: analyticsFound, error } = await supabaseClient.rpc('count_clicks', {
+            ids: ids.join(',')
+        });
+    
+        if (error) {
+            console.error(error);
+            return new Response(null, { status: 500 });
+        }
+
+        const clicksMap = new Map(analyticsFound.map((r: any) => [r.linkid, r.clicks]));
+
+        rows = rows.map((row: any) => Object.assign({}, row, {
+            clicks: clicksMap.get(row.id) || 0
+        }));
     }
 
     return new Response(JSON.stringify({ totalRows, rows }), { status: 200 });

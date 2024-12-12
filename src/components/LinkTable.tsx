@@ -11,7 +11,7 @@ interface LinkRow {
     originalUrl: string,
     shortId: string,
     shortUrl: string,
-    clicks?: number
+    clicks: number
 }
 
 export default function LinkTable () {
@@ -54,7 +54,7 @@ export default function LinkTable () {
                                     <Link href={link.originalUrl} target='_blank'>{ link.originalUrl }</Link>
                                 </td>
 				                <td onClick={(_) => doCopy(link.shortUrl)} className=''>{ link.shortId }</td>
-				                <td className=''>0</td>
+				                <td className=''>{ link.clicks }</td>
                                 <td className='text-red'>
                                     <Link href={`/view/${link.shortId}`}>Inspect</Link>
                                 </td>
