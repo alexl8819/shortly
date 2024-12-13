@@ -28,7 +28,7 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
 
     const sourceAddress = headers.get('x-forwarded-for') || headers.get('cf-connecting-ip') || headers.get('x-real-ip');
     const userAgent = headers.get('user-agent');
-    const referrer = headers.get('referer');
+    const referer = headers.get('referer');
 
     // TODO: should probably be moved to Analytics as a long running fn?
     if (sourceAddress) {
@@ -104,7 +104,7 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
     const { error: analyicsError } = await supabaseClient.from('Analytics').insert(decamelizeKeys({
         link: row.id,
         sourceAddress,
-        referrer,
+        referer,
         userAgent
     }));
 
