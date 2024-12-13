@@ -1,5 +1,8 @@
-// Custom HCaptcha Validatation
-// Used for account registration only
+interface CaptchaResult {
+    success: boolean,
+    'error-codes': Array<string>
+}
+
 export async function validateCaptcha (token: string, secret: string): Promise<boolean> {
     let verifyResponse;
 
@@ -20,17 +23,17 @@ export async function validateCaptcha (token: string, secret: string): Promise<b
         return false;
     }
 
-    if (verifyResponse && verifyResponse.status !== 200) {
+    if (verifyResponse && !verifyResponse.ok) {
         console.log(verifyResponse.status);
         return false;
     }
 
-    const statusState = await verifyResponse?.json();
+    const result: CaptchaResult = await verifyResponse.json();
     
-    if (!statusState['success'] && statusState['error-codes']) {
-        console.log(statusState['error-codes']);
+    if (!result.success && result['error-codes']) {
+        console.log(result['error-codes']);
         return false;
     }
 
-    return statusState['success'];
+    return result['success'];
 }
