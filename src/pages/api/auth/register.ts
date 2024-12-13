@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 
 import { supabaseClient } from "../../../lib/client";
+import { validateCaptcha } from "../../../lib/common";
 
 export const POST: APIRoute = async ({ request, redirect }) => {
     const form = await request.formData();
@@ -10,17 +11,13 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     const captchaToken = form.get('captchaToken')?.toString();
 
     if (!email || !password || !captchaToken) {
-        return new Response(JSON.stringify({
-            error: 'Missing email, password or token'
-        }), {status: 400});
+        return redirect(`/signup?error=${encodeURIComponent('Missing email, password or token')}`);
     }
 
     const successCaptcha = await validateCaptcha(captchaToken, import.meta.env.HCAPTCHA_SECRET_KEY);
 
     if (!successCaptcha) {
-        return new Response(JSON.stringify({
-            error: 'Failed to validate captcha'
-        }), { status: 500 });
+        return redirect(`/signup?error=${encodeURIComponent('Failed to validate captcha')}`);
     }
     
     const { data, error: signUpError } = await supabaseClient.auth.signUp({
@@ -29,58 +26,8 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     });
 
     if (signUpError) {
-        return new Response(JSON.stringify({
-            error: signUpError.message
-        }), { status: 500 });
-    }
-
-    const { error: userError } = await supabaseClient.from('Users').insert({
-        user_id: data.user?.id
-    });
-
-    if (userError) {
-        console.error(userError);
-        return new Response(JSON.stringify({
-            error: 'Failed to create new user'
-        }), { status: 500 });
+        return redirect(`/signup?error=${encodeURIComponent(signUpError.message)}`);
     }
     
     return redirect('/login?checkEmail=true');
-}
-
-// Custom HCaptcha Validatation
-// Used for account registration only
-async function validateCaptcha (token: string, secret: string): Promise<boolean> {
-    let verifyResponse;
-
-    const serialized = new URLSearchParams();
-    serialized.append('response', token);
-    serialized.append('secret', secret);
-
-    try {
-        verifyResponse = await fetch('https://api.hcaptcha.com/siteverify', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: serialized
-        });
-    } catch (err) {
-        console.error(err);
-        return false;
-    }
-
-    if (verifyResponse && verifyResponse.status !== 200) {
-        console.log(verifyResponse.status);
-        return false;
-    }
-
-    const statusState = await verifyResponse?.json();
-    
-    if (!statusState['success'] && statusState['error-codes']) {
-        console.log(statusState['error-codes']);
-        return false;
-    }
-
-    return statusState['success'];
 }
