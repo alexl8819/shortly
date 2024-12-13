@@ -25,7 +25,7 @@ const { directory, showAdSection } = Astro.props;
       (
         <section class="flex flex-col justify-center items-center bg-dark-violet text-center xl:min-h-[15.625rem] lg:min-h-[15.325rem] min-h-[18.75rem] lg:bg-bg-boost-desktop bg-bg-boost-mobile bg-no-repeat xl:bg-cover bg-auto xl:bg-bottom bg-right">
           <h2 class="leading-[3rem] tracking-[-0.044em] font-bold xl:text-[2.5rem] text-[1.75rem] text-white">Boost your links today</h2>
-          <button class="xl:mt-8 mt-4 hover:bg-light-cyan bg-cyan text-white rounded-full py-3 xl:px-10 px-8 font-bold text-[1.25rem]">Get Started</button>
+          <Link href="/login" className="xl:mt-8 mt-4 hover:bg-light-cyan bg-cyan text-white rounded-full py-3 xl:px-10 px-8 font-bold text-[1.25rem]">Get Started</Link>
         </section>
       ) : null
   }
