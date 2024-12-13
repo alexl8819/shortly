@@ -30,11 +30,7 @@ export const RegisterForm: FC<RegisterFormProps> = ({ siteKey }) => {
             </div>
             <div className='lg:ml-[9.5rem] xl:ml-[10rem] mt-[1.25rem] lg:min-h-[80px] lg:w-3/4 w-full'>
                 <Input type="hidden" id="captchaToken" name="captchaToken" value={captchaToken} />
-                <HCaptcha 
-                    ref={captchaRef} 
-                    sitekey={siteKey} 
-                    onVerify={(token) => setCaptchaToken(token)} 
-                />
+                <HCaptcha ref={captchaRef} sitekey={siteKey} onVerify={(token) => setCaptchaToken(token)} />
             </div>
             <Button type='submit' className='mt-4 py-3 lg:px-12 px-6 rounded-lg hover:bg-light-cyan bg-cyan text-white lg:w-auto w-full text-center cursor-pointer disabled:cursor-not-allowed'>Create</Button>
         </Form>

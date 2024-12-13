@@ -1,5 +1,5 @@
 // import { Controller } from 'react-hook-form';
-import { Form, Label, Input, Button } from 'react-aria-components';
+import { Form, Label, Input, Button, Link } from 'react-aria-components';
 
 export default function LoginForm () {
     return (
@@ -11,6 +11,9 @@ export default function LoginForm () {
             <div className='flex lg:flex-row flex-col justify-center items-center w-full'>
                 <Label htmlFor='password' id='password' className='lg:w-auto w-full lg:min-w-[80px] lg:mr-3 lg:mb-0 mb-2 text-left text-white'>Password:</Label>
                 <Input type='password' id='password' name='password' className='lg:w-2/3 w-full py-1.5 px-3 outline-none' /> 
+            </div>
+            <div className='flex lg:flex-row flex-col justify-end items-center lg:w-2/3 w-full lg:ml-24 ml-0 text-sm text-white'>
+                <Link href="/reset" className='underline underline-offset-4'>Forgot Password</Link>
             </div>
             <Button type='submit' className='mt-4 py-3 lg:px-12 px-6 rounded-lg hover:bg-light-cyan bg-cyan text-white lg:w-auto w-full text-center cursor-pointer disabled:cursor-not-allowed'>Sign In</Button>
         </Form>

@@ -3,9 +3,9 @@ import Layout from "../layouts/Layout.astro";
 import Header from '../components/Header';
 import Footer from '../components/Footer.astro';
 
-import RegisterForm from "../components/RegisterForm";
+import RegisterForm from "../components/forms/RegisterForm";
 
-const { cookies, redirect } = Astro;
+const { cookies, redirect, request } = Astro;
 
 const siteKey = import.meta.env.PUBLIC_HCAPTCHA_SITE_KEY;
 
@@ -17,6 +17,9 @@ const isLoggedIn = typeof accessToken !== 'undefined' && typeof refreshToken !==
 if (isLoggedIn) {
   return redirect("/dashboard");
 }
+
+const urlParams = new URL(request.url).searchParams;
+const hasErrorMessage = urlParams.get('error');
 ---
 <Layout title="Shortly - Sign Up">
     <Header client:load links={[
@@ -30,6 +33,13 @@ if (isLoggedIn) {
                 Sign Up
             </h1>
             <RegisterForm client:load siteKey={siteKey} />
+			{
+                hasErrorMessage ? (
+                    <p class="mt-4 font-bold text-red text-sm">
+						{ hasErrorMessage }
+					</p>
+                ) : null
+            }
         </section>
     </main>
     <Footer showAdSection={false} directory={[
