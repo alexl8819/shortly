@@ -1,0 +1,89 @@
+---
+import { Link } from 'react-aria-components';
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer.astro';
+
+import { supabaseClient } from '../../lib/client';
+import AnalyticsMap from '../../components/AnalyticsMap';
+
+const { id: itemId } = Astro.params;
+
+const accessToken = Astro.cookies.get("sb-access-token");
+const refreshToken = Astro.cookies.get("sb-refresh-token");
+
+if (!accessToken || !refreshToken) {
+  return Astro.redirect("/login");
+}
+
+const isLoggedIn = typeof accessToken !== 'undefined' && typeof refreshToken !== 'undefined';
+
+let session;
+
+try {
+  session = await supabaseClient.auth.setSession({
+    refresh_token: refreshToken.value,
+    access_token: accessToken.value,
+  });
+
+  if (session.error) {
+    Astro.cookies.delete("sb-access-token", {
+      path: "/",
+    });
+    Astro.cookies.delete("sb-refresh-token", {
+      path: "/",
+    });
+
+    return Astro.redirect("/login");
+  }
+} catch (error) {
+  Astro.cookies.delete("sb-access-token", {
+    path: "/",
+  });
+  Astro.cookies.delete("sb-refresh-token", {
+    path: "/",
+  });
+
+  return Astro.redirect("/login");
+}
+
+---
+
+<Layout title={`Shortly - Viewing ${itemId}`}>
+	<Header client:load links={[
+		{ label: 'Features', url: 'features' }, 
+		{ label: 'Pricing', url: 'pricing' }, 
+		{ label: 'Resources', url: 'resources' }
+	]} isLoggedIn={isLoggedIn}} />
+	<main class="lg:px-[7.375rem] xl:px-[10.375rem] px-6 py-12 lg:mt-6">
+		<!--<h1 class="xl:text-[4rem] lg:text-[3.5rem] text-[2.625rem] xl:leading-[5.625rem] lg:leading-[4rem] leading-[3rem] tracking-[-0.066em] font-bold text-very-dark-blue">Stats for <span class="font-bold text-cyan">{ itemId }</span></h1>-->
+		<AnalyticsMap id={itemId} client:load />
+	</main>
+	<Footer directory={[
+		{ 
+			section: 'Features',
+			links: [
+				{ label: 'Link Shortening', url: 'shorten' },
+				{ label: 'Branded Links', url: 'branded' },
+				{ label: 'Analytics', url: 'analytics' }
+			]
+		},
+		{
+			section: 'Resources',
+			links: [
+				{ label: 'Blog', url: 'blog' },
+				{ label: 'Developers', url: 'developers' },
+				{ label: 'Support', url: 'support' }
+			]
+		},
+		{
+			section: 'Company',
+			links: [
+				{ label: 'About', url: 'about' },
+				{ label: 'Our Team', url: 'team' },
+				{ label: 'Careers', url: 'careers' },
+				{ label: 'Contact', url: 'contact' }
+			]
+		}
+	]} />
+</Layout>

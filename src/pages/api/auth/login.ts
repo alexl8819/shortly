@@ -29,8 +29,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         return new Response(null, { status: 500 });
     }
 
-    console.log(userCreatedData);
-
     if (!userCreatedData || !userCreatedData.length) {
         const { error: userError } = await supabaseClient.from('Users').insert(decamelizeKeys({
             userId: data.user.id
