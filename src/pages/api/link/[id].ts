@@ -8,7 +8,7 @@ import decamelizeKeys from "decamelize-keys";
 
 export const GET: APIRoute = async ({ request, params, redirect }) => {
     const { id } = params;
-    const { headers } = request;
+    const { headers, url } = request;
     // TODO: use cache
     const { data, error } = await supabaseClient.from('Links').select('id,original_url').eq('short_id', id).limit(1);
 
@@ -101,11 +101,25 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
         }
     }
 
+    // Track UTM params from original URL
+    const urlParams = new URL(row.originalUrl).searchParams;
+
+    const utmSource = urlParams.get('utm_source')?.toString();
+    const utmMedium = urlParams.get('utm_medium')?.toString();
+    const utmCampaign = urlParams.get('utm_campaign')?.toString();
+    const utmTerm = urlParams.get('utm_term')?.toString();
+    const utmContent = urlParams.get('utm_content')?.toString();
+
     const { error: analyicsError } = await supabaseClient.from('Analytics').insert(decamelizeKeys({
         link: row.id,
         sourceAddress,
         referer,
-        userAgent
+        userAgent,
+        utmSource,
+        utmMedium,
+        utmCampaign,
+        utmTerm,
+        utmContent
     }));
 
     if (analyicsError) {
