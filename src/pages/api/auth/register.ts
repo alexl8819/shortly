@@ -20,7 +20,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
         return redirect(`/signup?error=${encodeURIComponent('Failed to validate captcha')}`);
     }
     
-    const { data, error: signUpError } = await supabaseClient.auth.signUp({
+    const { error: signUpError } = await supabaseClient.auth.signUp({
         email,
         password,
     });
