@@ -23,6 +23,8 @@ import {
     faMobile, 
     faDesktop 
 } from '@fortawesome/free-solid-svg-icons';
+import PropTypes from 'prop-types';
+
 import Pagination from './Pagination';
 
 ChartJS.register(
@@ -40,7 +42,7 @@ dayjs.extend(utcPlugin.default);
 dayjs.extend(timezonePlugin.default);
 
 interface AnalyticsMapProps {
-    id: string
+    id: string | undefined
 }
 
 interface AnalyticsDataPoint {
@@ -94,6 +96,11 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
 
     const collectAssociated = async (id: string) => {
         let analyticsResponse;
+
+        if (isNaN(parseInt(id))) {
+            window.location.href = '/dashboard';
+            return null;
+        }
     
         try {
             analyticsResponse = await fetch(`/api/analytics/${id}`);
@@ -122,6 +129,9 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
     }
     
     useEffect(() => {
+        if (!id) {
+            return;
+        }
         collectAssociated(id);
     }, []);
 
@@ -219,6 +229,10 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
         </>
     );
 };
+
+AnalyticsMap.propTypes = {
+    id: PropTypes.string.isRequired
+}
 
 export default AnalyticsMap;
 
