@@ -81,7 +81,7 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
                         type='url' 
                         id='link-create-input' 
                         name='link-create-input' 
-                        className={`rounded outline-none py-3 px-6 w-full ${longUrlInput.length > 0 ? 'invalid:border-2 invalid:border-red': 'border-none'}`}
+                        className={`rounded py-3 px-6 w-full ${longUrlInput.length > 0 ? 'invalid:border-2 invalid:border-red': 'border-none'}`}
                         value={longUrlInput}
                         placeholder='Shorten a link here...'
                         onChange={({ target }) => setLongUrlInput(target.value)}
