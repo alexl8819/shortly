@@ -1,5 +1,5 @@
 import { useState, useEffect, type FC } from 'react';
-import { Link } from 'react-aria-components';
+import { Button, Link } from 'react-aria-components';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -11,10 +11,21 @@ import {
     Filler,
     Legend,
   } from 'chart.js';
-  import { Line } from 'react-chartjs-2';
-  import dayjs, { type ManipulateType } from 'dayjs';
+import { Line } from 'react-chartjs-2';
+import dayjs, { type ManipulateType } from 'dayjs';
+import * as utcPlugin from 'dayjs/plugin/utc';
+import * as timezonePlugin from 'dayjs/plugin/timezone';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+    faUsers,
+    faCaretDown, 
+    faRobot, 
+    faMobile, 
+    faDesktop 
+} from '@fortawesome/free-solid-svg-icons';
+import Pagination from './Pagination';
 
-  ChartJS.register(
+ChartJS.register(
     CategoryScale,
     LinearScale,
     PointElement,
@@ -23,7 +34,10 @@ import {
     Tooltip,
     Filler,
     Legend
-  );
+);
+
+dayjs.extend(utcPlugin.default);
+dayjs.extend(timezonePlugin.default);
 
 interface AnalyticsMapProps {
     id: string
@@ -96,12 +110,13 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
         const analyticsData = await analyticsResponse.json();
         setCollected(analyticsData.rows);
         setTotalVistors(analyticsData.total);
-        const uniqueVistors = applyFilter(FilterType.UniqueVistors, analyticsData.rows);
+        const uniqueVistors = _applyFilter(FilterType.UniqueVistors, analyticsData.rows);
         setUniqueVistors(uniqueVistors?.result || 0);
-        const automatedVistors = applyFilter(FilterType.Bots, analyticsData.rows);
+        const automatedVistors = _applyFilter(FilterType.Bots, analyticsData.rows);
         setAutomatedVistors(automatedVistors?.result || 0);
+        // Generate date ranges from gathered data collection
         if (analyticsData.rows.length) {
-            const calculateDateRanges = generateDateRange(analyticsData.rows);
+            const calculateDateRanges = _generateDateRange(analyticsData.rows);
             setDateRanges(calculateDateRanges);
         }
     }
@@ -116,12 +131,15 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
 
     return (
         <>
-            <div className="mb-6 flex flex-row justify-start items-center space-x-6 w-full">
-			    <Link className="hover:text-gray" href="/dashboard">Dashboard</Link>
-			    <span>{'>'}</span>
-			    <strong className="font-bold">{ collected[0].links.shortId }</strong>
-		    </div>
-            <div className='flex flex-col'>
+            { 
+                collected.length ? 
+                (<div className="mb-8 flex flex-row justify-start items-center space-x-6 w-full">
+			        <Link className="hover:text-gray" href="/dashboard">Dashboard</Link>
+			        <span>{'>'}</span>
+			        <strong className="font-bold">{ collected[0].links.shortId }</strong>
+		        </div>) : null
+            }
+            <div className='my-4 flex flex-col'>
                 <div className='flex flex-row justify-evenly items-center bg-white space-x-2 w-full'>
                     <div className='text-center'>
                         <div className='font-bold text-[4rem]'>{ uniqueVistors }</div>
@@ -136,6 +154,12 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                         <h3 className='text-very-dark-violet text-xl'>Automated Vistors</h3>
                     </div>
                 </div>
+                { 
+                    collected.length ? 
+                    (<div className='my-8 text-center w-full'>
+                        <Link className='text-sm font-bold underline underline-offset-2' href={collected[0].links.originalUrl}>{ collected[0].links.originalUrl }</Link>
+                    </div>) : null
+                }
                 <div className='mt-4'>
                     {
                         collected.length && dateRanges ? <Line options={options} data={
@@ -145,24 +169,52 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                                     {
                                         fill: true,
                                         label: 'Clicks',
-                                        data: intersectDates(dateRanges, collected),
+                                        data: _intersectDates(dateRanges, collected),
                                         borderColor: 'rgb(53, 162, 235)',
                                         backgroundColor: 'rgba(53, 162, 235, 0.5)',
                                     },
                                 ],
                             }
-                        } /> : <h2 className='my-4 text-center font-bold text-[3.5rem] text-grayish-violet'>No visitors found</h2>
+                        } /> : (
+                            <div className='my-8 flex flex-col'>
+                                <FontAwesomeIcon icon={faUsers} size='8x' style={{ color: 'hsl(257, 7%, 63%)' }} />
+                                <h2 className='text-center font-bold text-[3.5rem] text-grayish-violet'>No visitors found</h2>
+                            </div>
+                        )
                     }
                 </div>
-                <ul className='mt-4 list-none space-y-4'>
+                <ul className='mt-4 list-none space-y-4 w-full'>
                     {
-                        collected.map(({ geolocation, devices }, index) => (
-                            <li key={index} className='px-2 divide-y-2'>
-
+                        collected.reverse().map(({ createdAt, geolocation, devices, referer }, index) => (
+                            <li key={index} className='mb-4 last:mb-0 w-full'>
+                                <div className='flex flex-col justify-start items-start w-full'>
+                                    <p className='text-sm'>
+                                        { 
+                                            dayjs(createdAt).tz(Intl.DateTimeFormat().resolvedOptions().timeZone).format('MM/DD/YYYY - hh:MM A') 
+                                        }
+                                    </p>
+                                    <div className='my-4 flex flex-row justify-between w-full'>
+                                        <div className={`${referer ? 'text-very-dark-blue' : 'text-gray'} text-sm`}>Referer: { referer || 'Unknown'}</div>
+                                        <div className='text-sm underline underline-offset-4'>
+                                            { [geolocation.city, geolocation.state, geolocation.country].filter((d) => d).join(', ') }
+                                        </div>
+                                    </div>
+                                    <div className='text-sm text-very-dark-violet'>
+                                        { 
+                                            devices.type ? devices.isAutomated ? (<FontAwesomeIcon icon={faRobot} size='1x' />) : (<FontAwesomeIcon icon={ devices.type === 'mobile' ? faMobile : faDesktop } size='1x' />) : null } Accessed using <strong className='font-bold'>{ devices.type === 'mobile' ? devices.model : devices.type } { devices.version }</strong> { devices.interface ? ` from ${devices.interface}` : '' 
+                                        }
+                                    </div>
+                                    <div className='flex flex-row justify-end items-center w-full'>
+                                        <Button onPress={() => {}}>
+                                            <FontAwesomeIcon icon={faCaretDown} size='1x' />
+                                        </Button>
+                                    </div>
+                                </div>
                             </li>
                         ))
                     }
                 </ul>
+                <Pagination total={collected.length} curPage={0} nextPage={() => {}} />
             </div>
         </>
     );
@@ -170,30 +222,16 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
 
 export default AnalyticsMap;
 
-function applyFilter (filter: FilterType, data: Array<AnalyticsDataPoint>) {
+function _applyFilter (filter: FilterType, data: Array<AnalyticsDataPoint>) {
     if (filter === FilterType.UniqueVistors) {
-        let unique = 0;
-        let last = '';
-        for (const { geolocation } of data.values()) {
-            if (geolocation.ipAddress !== last) {
-                unique += unique + 1;
-            }
-            last = geolocation.ipAddress;
-        }
-        return Object.freeze({ result: unique });
+        return Object.freeze({ result: new Set(data.map(({ geolocation }) => geolocation.ipAddress)).size });
     } else if (filter === FilterType.Bots) {
-        let botsFound = 0;
-        for (const { devices } of data.values()) {
-            if (devices.isAutomated) {
-                botsFound += botsFound + 1;
-            }
-        }
-        return Object.freeze({ result: botsFound });
+        return Object.freeze({ result: data.filter(({ devices }) => devices.isAutomated ).length });
     }
     return null;
 }
 
-function generateDateRange (dataCollection: Array<AnalyticsDataPoint>) {
+function _generateDateRange (dataCollection: Array<AnalyticsDataPoint>) {
     let startDate = null;
     let endDate = null;
 
@@ -233,7 +271,7 @@ function generateDateRange (dataCollection: Array<AnalyticsDataPoint>) {
         .map((date) => date.format('YYYY-MM-DD'));
 }
 
-function intersectDates (dateRanges: Array<string>, dataCollection: Array<AnalyticsDataPoint>) {
+function _intersectDates (dateRanges: Array<string>, dataCollection: Array<AnalyticsDataPoint>) {
     const data: number[] = Array.from({ length: 7 });
     data.fill(0);
 
