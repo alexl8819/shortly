@@ -6,11 +6,36 @@ import { isBot, isAIBot } from 'ua-parser-js/helpers';
 import { supabaseClient } from "../../../lib/client";
 import decamelizeKeys from "decamelize-keys";
 
+export const DELETE: APIRoute = async ({ params }) => {
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
+
+    if (userError) {
+        return new Response('Unauthorized', { status: 401 });
+    }
+
+    const { id: shortId } = params;
+
+    const { error: delError } = await supabaseClient.from('Links').delete().eq('short_id', shortId).eq('user_id', userData.user.id);
+
+    if (delError) {
+        console.error(delError);
+        return new Response(JSON.stringify({
+            error: 'Failed to delete link'
+        }), { status: 500 });
+    }
+
+    return new Response(null, { status: 204 });
+}
+
+/*export const PATCH: APIRoute = async ({}) => {
+
+}*/
+
 export const GET: APIRoute = async ({ request, params, redirect }) => {
-    const { id } = params;
-    const { headers, url } = request;
+    const { id: shortId } = params;
+    const { headers } = request;
     // TODO: use cache
-    const { data, error } = await supabaseClient.from('Links').select('id,original_url').eq('short_id', id).limit(1);
+    const { data, error } = await supabaseClient.from('Links').select('id,original_url').eq('short_id', shortId).limit(1);
 
     if (error) {
         return new Response(JSON.stringify({

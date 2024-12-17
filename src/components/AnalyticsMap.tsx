@@ -21,7 +21,8 @@ import {
     faCaretDown, 
     faRobot, 
     faMobile, 
-    faDesktop 
+    faDesktop,
+    faPenToSquare
 } from '@fortawesome/free-solid-svg-icons';
 import PropTypes from 'prop-types';
 
@@ -93,6 +94,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
     const [uniqueVistors, setUniqueVistors] = useState<number>(0);
     const [automatedVistors, setAutomatedVistors] = useState<number>(0);
     const [dateRanges, setDateRanges] = useState<Array<string>>();
+    const [isEditMode, setEditMode] = useState<boolean>(false);
 
     const collectAssociated = async (id: string) => {
         let analyticsResponse;
@@ -141,16 +143,13 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
 
     return (
         <>
-            { 
-                collected.length ? 
-                (<div className="mb-8 flex flex-row justify-start items-center space-x-6 w-full">
-			        <Link className="hover:text-gray" href="/dashboard">Dashboard</Link>
-			        <span>{'>'}</span>
-			        <strong className="font-bold">{ collected[0].links.shortId }</strong>
-		        </div>) : null
-            }
+            <div className="mb-8 flex flex-row justify-start items-center space-x-6 w-full">
+			    <Link className="hover:text-gray" href="/dashboard">Dashboard</Link>
+			    <span>{'>'}</span>
+			    <strong className="font-bold">{ collected.length ? collected[0].links.shortId : 'No Vistors Found' }</strong>
+		    </div>
             <div className='my-4 flex flex-col'>
-                <div className='flex flex-row justify-evenly items-center bg-white space-x-2 w-full'>
+                { collected.length && dateRanges ? (<div className='flex flex-row justify-evenly items-center bg-white space-x-2 w-full'>
                     <div className='text-center'>
                         <div className='font-bold text-[4rem]'>{ uniqueVistors }</div>
                         <h3 className='text-very-dark-violet text-xl'>Unique Vistors</h3>
@@ -163,12 +162,23 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                         <div className='font-bold text-[4rem]'>{ automatedVistors }</div>
                         <h3 className='text-very-dark-violet text-xl'>Automated Vistors</h3>
                     </div>
-                </div>
+                </div>) : null
+                }
                 { 
-                    collected.length ? 
-                    (<div className='my-8 text-center w-full'>
-                        <Link className='text-sm font-bold underline underline-offset-2' href={collected[0].links.originalUrl}>{ collected[0].links.originalUrl }</Link>
-                    </div>) : null
+                    collected.length && !isEditMode ? 
+                    (
+                        <div className='my-8 flex flex-row justify-center items-center text-center w-full'>
+                            <Link className='text-sm font-bold underline underline-offset-2' href={collected[0].links.originalUrl}>{ collected[0].links.originalUrl }</Link>
+                            <Button onPress={() => setEditMode(true)} className='lg:ml-3 ml-1'>
+                                <FontAwesomeIcon icon={faPenToSquare} size='1x' />
+                            </Button>
+                        </div>
+                    ) : (
+                        isEditMode && collected.length ?
+                        (
+                            <></>
+                        ) : null
+                    )
                 }
                 <div className='mt-4'>
                     {
@@ -186,7 +196,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                                 ],
                             }
                         } /> : (
-                            <div className='my-8 flex flex-col'>
+                            <div className='my-12 flex flex-col'>
                                 <FontAwesomeIcon icon={faUsers} size='8x' style={{ color: 'hsl(257, 7%, 63%)' }} />
                                 <h2 className='text-center font-bold text-[3.5rem] text-grayish-violet'>No visitors found</h2>
                             </div>
@@ -196,7 +206,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                 <ul className='mt-4 list-none space-y-4 w-full'>
                     {
                         collected.reverse().map(({ createdAt, geolocation, devices, referer }, index) => (
-                            <li key={index} className='mb-4 last:mb-0 w-full'>
+                            <li key={index} className='p-4 mb-4 last:mb-0 hover:bg-gray bg-opacity-20 w-full'>
                                 <div className='flex flex-col justify-start items-start w-full'>
                                     <p className='text-sm'>
                                         { 

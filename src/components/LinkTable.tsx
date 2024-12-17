@@ -1,10 +1,14 @@
 import { Link } from 'react-aria-components';
 import clipboard from 'clipboardy';
+import { ToastContainer, toast, Zoom } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLink } from '@fortawesome/free-solid-svg-icons';
 
 import { useShortener } from '../contexts/ShortenerContext';
+import { ModalProvider } from '../contexts/ModalContext';
+import { ConfirmModal } from './Modal';
 import { Pagination } from './Pagination';
+import { ModalTrigger } from './ModalTrigger';
 
 interface LinkRow {
     id: number,
@@ -33,11 +37,12 @@ export default function LinkTable () {
     }
 
     const doCopy = async (shortId: string) => {
-        await clipboard.write(shortId); 
+        toast.info(`Copied ${shortId} to clipboard`);
+        await clipboard.write(shortId);
     };
     
     return (
-        <>
+        <ModalProvider>
             <table className="mt-12 table-fixed w-full">
 			    <thead>
 			        <tr className='text-center h-10'>
@@ -51,12 +56,12 @@ export default function LinkTable () {
                         links ? links.map((link: LinkRow, index: number) => (
                             <tr key={link.id} className={`${hasNew && (links.length - 1) === index ? 'bg-cyan text-white animate-pulse opacity-75' : ''} text-center text-very-dark-blue hover:text-grayish-violet divide-y divide-gray h-10 cursor-pointer`}>
 				                <td className='truncate overflow-x-hidden border-t border-gray w-1/2'>
-                                    <Link href={link.originalUrl} target='_blank'>{ link.originalUrl }</Link>
+                                    <Link href={`/view/${link.id}`}>{ link.originalUrl }</Link>
                                 </td>
 				                <td onClick={(_) => doCopy(link.shortUrl)} className=''>{ link.shortId }</td>
 				                <td className={link.clicks ? 'font-bold' : ''}>{ link.clicks }</td>
-                                <td className='text-red'>
-                                    <Link href={`/view/${link.id}`}>Inspect</Link>
+                                <td className='flex flex-row lg:justify-around justify-between items-center pt-1.5'>
+                                    <ModalTrigger shortId={link.shortId} />
                                 </td>
 			                </tr>
                         )) : null
@@ -64,6 +69,8 @@ export default function LinkTable () {
 		        </tbody>
 		    </table>
             <Pagination curPage={cursor} nextPage={setCursor} total={total} />
-        </>
+            <ToastContainer autoClose={3000} transition={Zoom} />
+            <ConfirmModal title="Are you sure?" content="You are about to delete this link" />
+        </ModalProvider>
     );
 }

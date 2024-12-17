@@ -11,12 +11,14 @@ const ShortenerContext = createContext<{
     total: number,
     cursor: number,
     setCursor: Function,
+    removeLink: Function,
     hasNew: boolean
 }>({
     links: [],
     total: 0,
     cursor: 0,
     setCursor: () => {},
+    removeLink: () => {},
     hasNew: false
 });
 
@@ -55,12 +57,35 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
 
         setLinks(links ? rows : (_) => [...rows]);
         setTotal((prev) => {
-            if (prev > 0 && prev !== totalRows) {
+            if (prev > 0 && totalRows > prev) {
                 setHasNew(true);
             }
             return totalRows;
         });
     };
+
+    const removeLink = (shortId: string) => {
+        return async () => {
+            let removeResponse;
+
+            try {
+                removeResponse = await fetch(`/api/link/${shortId}`, {
+                    method: 'delete'
+                });
+            } catch (err) {
+                console.error(err);
+                return null;
+            }
+
+            if (removeResponse && !removeResponse.ok) {
+                return null;
+            }
+
+            if (links) {
+                setLinks(links.filter((link) => link.shortId !== shortId));
+            }
+        };
+    }
   
     useEffect(() => {
         fetchAllLinks();
@@ -72,6 +97,7 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
             total,
             cursor,
             setCursor,
+            removeLink,
             hasNew
         }}>
             { children }
