@@ -56,7 +56,7 @@ export default function LinkTable () {
                         links ? links.map((link: LinkRow, index: number) => (
                             <tr key={link.id} className={`${hasNew && (links.length - 1) === index ? 'bg-cyan text-white animate-pulse opacity-75' : ''} text-center text-very-dark-blue hover:text-grayish-violet divide-y divide-gray h-10 cursor-pointer`}>
 				                <td className='truncate overflow-x-hidden border-t border-gray w-1/2'>
-                                    <Link href={`/view/${link.id}`}>{ link.originalUrl }</Link>
+                                    <Link href={`/analytics/${link.id}`}>{ link.originalUrl }</Link>
                                 </td>
 				                <td onClick={(_) => doCopy(link.shortUrl)} className=''>{ link.shortId }</td>
 				                <td className={link.clicks ? 'font-bold' : ''}>{ link.clicks }</td>
