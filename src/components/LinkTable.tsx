@@ -10,6 +10,8 @@ import { ConfirmModal } from './Modal';
 import { Pagination } from './Pagination';
 import { ModalTrigger } from './ModalTrigger';
 
+import 'react-toastify/dist/ReactToastify.css';
+
 interface LinkRow {
     id: number,
     originalUrl: string,
@@ -37,8 +39,8 @@ export default function LinkTable () {
     }
 
     const doCopy = async (shortId: string) => {
-        toast.info(`Copied ${shortId} to clipboard`);
         await clipboard.write(shortId);
+        toast.info(`Copied ${shortId} to clipboard`);
     };
     
     return (
