@@ -43,6 +43,10 @@ export const PATCH: APIRoute = async ({ request }) => {
         return new Response(JSON.stringify({
             error: 'Missing updated URL'
         }), { status: 400 });
+    } else if (!shortId) {
+        return new Response(JSON.stringify({
+            error: 'Missing shortId'
+        }), { status: 400 });
     }
 
     if (!VALID_URL.test(newUrl)) {
