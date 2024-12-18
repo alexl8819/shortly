@@ -5,6 +5,7 @@ import { Crawlers, CLIs, Emails } from 'ua-parser-js/extensions';
 import { isBot, isAIBot } from 'ua-parser-js/helpers';
 import { supabaseClient } from "../../../lib/client";
 import decamelizeKeys from "decamelize-keys";
+import { VALID_URL } from "../../../lib/constants";
 
 export const DELETE: APIRoute = async ({ params }) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser();
@@ -27,9 +28,40 @@ export const DELETE: APIRoute = async ({ params }) => {
     return new Response(null, { status: 204 });
 }
 
-/*export const PATCH: APIRoute = async ({}) => {
+export const PATCH: APIRoute = async ({ request }) => {
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
 
-}*/
+    if (userError) {
+        return new Response('Unauthorized', { status: 401 });
+    }
+
+    const form = await request.formData();
+    const shortId = form.get('shortId')?.toString();
+    const newUrl = form.get('new')?.toString();
+
+    if (!newUrl) {
+        return new Response(JSON.stringify({
+            error: 'Missing updated URL'
+        }), { status: 400 });
+    }
+
+    if (!VALID_URL.test(newUrl)) {
+        return new Response(JSON.stringify({
+            error: 'Invalid URL provided'
+        }), { status: 400 });
+    }
+
+    const { error } = await supabaseClient.from('Links').update(decamelizeKeys({
+        originalUrl: newUrl
+    })).eq('short_id', shortId).eq('user_id', userData.user.id);
+
+    if (error) {
+        console.error(error);
+        return new Response(null, { status: 500 });
+    }
+
+    return new Response(null, { status: 200 });
+}
 
 export const GET: APIRoute = async ({ request, params, redirect }) => {
     const { id: shortId } = params;

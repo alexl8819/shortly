@@ -24,9 +24,13 @@ import {
     faDesktop,
     faPenToSquare
 } from '@fortawesome/free-solid-svg-icons';
+import { ToastContainer, toast } from 'react-toastify';
 import PropTypes from 'prop-types';
 
 import Pagination from './Pagination';
+import LinkEditor from './LinkEditor';
+
+import 'react-toastify/dist/ReactToastify.css';
 
 ChartJS.register(
     CategoryScale,
@@ -47,21 +51,18 @@ interface AnalyticsMapProps {
 }
 
 interface AnalyticsDataPoint {
-    createdAt: Date,
-    referer: string | null,
-    links: {
-        id: number,
-        shortId: string,
-        originalUrl: string
-    },
-    geolocation: {
+    shortId: string,
+    originalUrl: string,
+    createdAt?: Date,
+    referer?: string | null,
+    geolocation?: {
         ipAddress: string,
         fingerprint?: string | null,
         country?: string | null,
         state?: string | null,
         city?: string | null
     },
-    devices: {
+    devices?: {
         type: string | null,
         model?: string | null,
         vendor?: string | null,
@@ -90,6 +91,7 @@ const options = {
 
 export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
     const [collected, setCollected] = useState<Array<AnalyticsDataPoint>>();
+    const [originalUrl, setOriginalUrl] = useState<string>('');
     const [totalVistors, setTotalVistors] = useState<number>(0);
     const [uniqueVistors, setUniqueVistors] = useState<number>(0);
     const [automatedVistors, setAutomatedVistors] = useState<number>(0);
@@ -118,13 +120,15 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
     
         const analyticsData = await analyticsResponse.json();
         setCollected(analyticsData.rows);
+        setOriginalUrl(analyticsData.rows[0].originalUrl);
         setTotalVistors(analyticsData.total);
-        const uniqueVistors = _applyFilter(FilterType.UniqueVistors, analyticsData.rows);
-        setUniqueVistors(uniqueVistors?.result || 0);
-        const automatedVistors = _applyFilter(FilterType.Bots, analyticsData.rows);
-        setAutomatedVistors(automatedVistors?.result || 0);
-        // Generate date ranges from gathered data collection
-        if (analyticsData.rows.length) {
+        // Only generate statistics on actual data
+        if (analyticsData.total > 0) {
+            const uniqueVistors = _applyFilter(FilterType.UniqueVistors, analyticsData.rows);
+            setUniqueVistors(uniqueVistors?.result || 0);
+            const automatedVistors = _applyFilter(FilterType.Bots, analyticsData.rows);
+            setAutomatedVistors(automatedVistors?.result || 0);
+            // Generate date ranges from gathered data collection
             const calculateDateRanges = _generateDateRange(analyticsData.rows);
             setDateRanges(calculateDateRanges);
         }
@@ -146,7 +150,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
             <div className="mb-8 flex flex-row justify-start items-center space-x-6 w-full">
 			    <Link className="hover:text-gray" href="/dashboard">Dashboard</Link>
 			    <span>{'>'}</span>
-			    <strong className="font-bold">{ collected.length ? collected[0].links.shortId : 'No Vistors Found' }</strong>
+			    <strong className="font-bold">{ collected[0].shortId }</strong>
 		    </div>
             <div className='my-4 flex flex-col'>
                 { collected.length && dateRanges ? (<div className='flex flex-row justify-evenly items-center bg-white space-x-2 w-full'>
@@ -164,22 +168,23 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                     </div>
                 </div>) : null
                 }
-                { 
-                    collected.length && !isEditMode ? 
-                    (
-                        <div className='my-8 flex flex-row justify-center items-center text-center w-full'>
-                            <Link className='text-sm font-bold underline underline-offset-2' href={collected[0].links.originalUrl}>{ collected[0].links.originalUrl }</Link>
-                            <Button onPress={() => setEditMode(true)} className='lg:ml-3 ml-1'>
-                                <FontAwesomeIcon icon={faPenToSquare} size='1x' />
-                            </Button>
-                        </div>
-                    ) : (
-                        isEditMode && collected.length ?
-                        (
-                            <></>
-                        ) : null
-                    )
-                }
+                <div className='my-8 flex flex-row justify-center items-center text-center w-full'>
+                    {
+                      isEditMode ? (<LinkEditor url={originalUrl} shortId={collected[0].shortId} onSuccess={(nUrl: string) => {
+                        toast.success(`Successfully updated url to ${nUrl}`);
+                        setOriginalUrl(nUrl);
+                        setEditMode(false);
+                    }} />) : (
+                            <>
+                                <Link className='text-sm font-bold underline underline-offset-2' href={originalUrl}>{ originalUrl }</Link>
+                                <Button onPress={() => setEditMode(true)} className='lg:ml-3 ml-1'>
+                                    <FontAwesomeIcon icon={faPenToSquare} size='1x' />
+                                </Button>
+                            </>
+                        )
+                    }
+                </div>
+                
                 <div className='mt-4'>
                     {
                         collected.length && dateRanges ? <Line options={options} data={
@@ -205,7 +210,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                 </div>
                 <ul className='mt-4 list-none space-y-4 w-full'>
                     {
-                        collected.reverse().map(({ createdAt, geolocation, devices, referer }, index) => (
+                        totalVistors >  0 ? collected.reverse().map(({ createdAt, geolocation, devices, referer }, index) => (
                             <li key={index} className='p-4 mb-4 last:mb-0 hover:bg-gray bg-opacity-20 w-full'>
                                 <div className='flex flex-col justify-start items-start w-full'>
                                     <p className='text-sm'>
@@ -216,12 +221,12 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                                     <div className='my-4 flex flex-row justify-between w-full'>
                                         <div className={`${referer ? 'text-very-dark-blue' : 'text-gray'} text-sm`}>Referer: { referer || 'Unknown'}</div>
                                         <div className='text-sm underline underline-offset-4'>
-                                            { [geolocation.city, geolocation.state, geolocation.country].filter((d) => d).join(', ') }
+                                            { [geolocation?.city, geolocation?.state, geolocation?.country].filter((d) => d).join(', ') }
                                         </div>
                                     </div>
                                     <div className='text-sm text-very-dark-violet'>
                                         { 
-                                            devices.type ? devices.isAutomated ? (<FontAwesomeIcon icon={faRobot} size='1x' />) : (<FontAwesomeIcon icon={ devices.type === 'mobile' ? faMobile : faDesktop } size='1x' />) : null } Accessed using <strong className='font-bold'>{ devices.type === 'mobile' ? devices.model : devices.type } { devices.version }</strong> { devices.interface ? ` from ${devices.interface}` : '' 
+                                            devices?.type ? devices.isAutomated ? (<FontAwesomeIcon icon={faRobot} size='1x' />) : (<FontAwesomeIcon icon={ devices.type === 'mobile' ? faMobile : faDesktop } size='1x' />) : null } Accessed using <strong className='font-bold'>{ devices?.type === 'mobile' ? devices.model : devices?.type } { devices?.version }</strong> { devices?.interface ? ` from ${devices.interface}` : '' 
                                         }
                                     </div>
                                     <div className='flex flex-row justify-end items-center w-full'>
@@ -231,10 +236,11 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                                     </div>
                                 </div>
                             </li>
-                        ))
+                        )) : null
                     }
                 </ul>
                 <Pagination total={collected.length} curPage={0} nextPage={() => {}} />
+                <ToastContainer />
             </div>
         </>
     );
@@ -248,9 +254,9 @@ export default AnalyticsMap;
 
 function _applyFilter (filter: FilterType, data: Array<AnalyticsDataPoint>) {
     if (filter === FilterType.UniqueVistors) {
-        return Object.freeze({ result: new Set(data.map(({ geolocation }) => geolocation.ipAddress)).size });
+        return Object.freeze({ result: new Set(data.map(({ geolocation }) => geolocation?.ipAddress)).size });
     } else if (filter === FilterType.Bots) {
-        return Object.freeze({ result: data.filter(({ devices }) => devices.isAutomated ).length });
+        return Object.freeze({ result: data.filter(({ devices }) => devices?.isAutomated ).length });
     }
     return null;
 }
