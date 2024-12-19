@@ -148,7 +148,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
         };
         
         collectAssociated(id);
-        
+
         window.addEventListener('resize', handleResize);
 
         return () => {
@@ -163,7 +163,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
 
     return (
         <>
-            <div className="mb-8 flex flex-row justify-start items-center space-x-6 w-full">
+            <div className="mb-8 flex flex-row justify-start items-center space-x-4 w-full">
 			    <Link className="hover:text-gray" href="/dashboard">Dashboard</Link>
 			    <span>{'>'}</span>
 			    <strong className="font-bold">{ collected[0].shortId }</strong>
@@ -219,7 +219,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                         } /> : (
                             <div className='my-12 flex flex-col'>
                                 <FontAwesomeIcon icon={faUsers} size='8x' style={{ color: 'hsl(257, 7%, 63%)' }} />
-                                <h2 className='text-center font-bold text-[3.5rem] text-grayish-violet'>No visitors found</h2>
+                                <h2 className='text-center font-bold text-[3.5rem] text-very-dark-violet'>No visitors found</h2>
                             </div>
                         )
                     }
