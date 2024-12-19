@@ -1,4 +1,4 @@
-import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, useRef, type FC } from 'react';
 import { Button, Link } from 'react-aria-components';
 import {
     Chart as ChartJS,
@@ -98,6 +98,8 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
     const [dateRanges, setDateRanges] = useState<Array<string>>();
     const [isEditMode, setEditMode] = useState<boolean>(false);
 
+    const chartRef = useRef(null);
+
     const collectAssociated = async (id: string) => {
         let analyticsResponse;
 
@@ -138,9 +140,23 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
         if (!id) {
             return;
         }
+
+        const handleResize = () => {
+            if (chartRef.current) {
+                (chartRef.current as ChartJS).resize();
+            }
+        };
+        
         collectAssociated(id);
+        
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
     }, []);
 
+    // TODO: loading skeleton
     if (!collected) {
         return null;
     }
@@ -187,7 +203,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                 
                 <div className='mt-4'>
                     {
-                        collected.length && dateRanges ? <Line options={options} data={
+                        collected.length && dateRanges ? <Line ref={chartRef} options={options} data={
                             {
                                 labels: dateRanges,
                                 datasets: [
@@ -218,7 +234,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                                             dayjs(createdAt).tz(Intl.DateTimeFormat().resolvedOptions().timeZone).format('MM/DD/YYYY - hh:MM A') 
                                         }
                                     </p>
-                                    <div className='my-4 flex flex-row justify-between w-full'>
+                                    <div className='my-4 flex lg:flex-row flex-col lg:justify-between justify-center w-full'>
                                         <div className={`${referer ? 'text-very-dark-blue' : 'text-gray'} text-sm`}>Referer: { referer || 'Unknown'}</div>
                                         <div className='text-sm underline underline-offset-4'>
                                             { [geolocation?.city, geolocation?.state, geolocation?.country].filter((d) => d).join(', ') }
@@ -261,20 +277,15 @@ function _applyFilter (filter: FilterType, data: Array<AnalyticsDataPoint>) {
     return null;
 }
 
-function _generateDateRange (dataCollection: Array<AnalyticsDataPoint>) {
+function _generateDateRange (dataCollection: Array<AnalyticsDataPoint>, tz: string = Intl.DateTimeFormat().resolvedOptions().timeZone) {
     let startDate = null;
-    let endDate = null;
+    let endDate = dayjs().tz(tz);
 
     for (const { createdAt } of dataCollection.values()) {
         const curDate = dayjs(createdAt);
 
-        if (!startDate) { 
+        if (!startDate || (startDate && curDate.isBefore(startDate))) {
             startDate = curDate;
-        } else if (startDate && curDate.isBefore(startDate)) {
-            endDate = startDate;
-            startDate = curDate;
-        } else if (startDate && curDate.isAfter(startDate)) {
-            endDate = curDate;
         }
     }
 
@@ -282,10 +293,9 @@ function _generateDateRange (dataCollection: Array<AnalyticsDataPoint>) {
         throw new Error('Could not find start date');
     }
 
-    // console.log(startDate);
-    // console.log(endDate);
+    startDate = startDate.tz(Intl.DateTimeFormat().resolvedOptions().timeZone);
     
-    const daysDiff = endDate ? dayjs(endDate).diff(startDate, 'days') : 0;
+    const daysDiff = Math.ceil(endDate.diff(startDate, 'days', true));
     let displayUnit = '';
     
     if (daysDiff <= 30) {
@@ -297,12 +307,12 @@ function _generateDateRange (dataCollection: Array<AnalyticsDataPoint>) {
     }
 
     // console.log(daysDiff);
-    return Array.from({ length: 7 }, (_, index) => startDate.add(index, displayUnit as ManipulateType))
+    return Array.from({ length: daysDiff }, (_, index) => startDate.add(index, displayUnit as ManipulateType))
         .map((date) => date.format('YYYY-MM-DD'));
 }
 
 function _intersectDates (dateRanges: Array<string>, dataCollection: Array<AnalyticsDataPoint>) {
-    const data: number[] = Array.from({ length: 7 });
+    const data: number[] = Array.from({ length: dateRanges.length });
     data.fill(0);
 
     for (const { createdAt } of dataCollection) {
