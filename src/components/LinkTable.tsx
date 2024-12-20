@@ -38,9 +38,9 @@ export default function LinkTable () {
         );
     }
 
-    const doCopy = async (shortId: string) => {
-        await clipboard.write(shortId);
-        toast.info(`Copied ${shortId} to clipboard`);
+    const doCopy = async (shortIdLink: string) => {
+        await clipboard.write(shortIdLink);
+        toast.info(`Copied ${shortIdLink} to clipboard`);
     };
     
     return (
@@ -49,22 +49,20 @@ export default function LinkTable () {
 			    <thead>
 			        <tr className='text-center h-10'>
 				        <th>Original URL</th>
-				        <th>Short Code</th>
+				        <th>Short URL</th>
 				        <th>Clicks</th>
 			        </tr>
 			    </thead>
 			    <tbody>
                     {
                         links ? links.map((link: LinkRow, index: number) => (
-                            <tr key={link.id} className={`${hasNew && (links.length - 1) === index ? 'bg-cyan text-white animate-pulse opacity-75' : ''} text-center text-very-dark-blue hover:text-grayish-violet divide-y divide-gray h-10 cursor-pointer`}>
+                            <tr key={link.id} className={`${hasNew && (links.length - 1) === index ? 'bg-cyan text-white animate-pulse opacity-75' : ''} text-center text-very-dark-blue hover:text-grayish-violet divide-y divide-gray h-12 cursor-pointer`}>
 				                <td className='truncate overflow-x-hidden border-t border-gray w-1/2'>
                                     <Link href={`/analytics/${link.id}`}>{ link.originalUrl }</Link>
                                 </td>
-				                <td onClick={(_) => doCopy(link.shortUrl)} className=''>{ link.shortId }</td>
+				                <td onClick={(_) => doCopy(link.shortUrl)}>{ link.shortId }</td>
 				                <td className={link.clicks ? 'font-bold' : ''}>{ link.clicks }</td>
-                                <td className='flex flex-row lg:justify-around justify-between items-center pt-1.5'>
-                                    <ModalTrigger shortId={link.shortId} />
-                                </td>
+                                <td><ModalTrigger shortId={link.shortId} /></td>
 			                </tr>
                         )) : null
                     }
