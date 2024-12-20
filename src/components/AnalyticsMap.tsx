@@ -43,6 +43,8 @@ ChartJS.register(
     Legend
 );
 
+ChartJS.defaults.scale.grid.display = false;
+
 dayjs.extend(utcPlugin.default);
 dayjs.extend(timezonePlugin.default);
 
