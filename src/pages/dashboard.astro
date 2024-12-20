@@ -6,6 +6,8 @@ import ShortenerContextWrapper from '../components/ContextWrapper';
 
 import { supabaseClient } from '../lib/client';
 
+import 'react-toastify/dist/ReactToastify.css';
+
 const accessToken = Astro.cookies.get("sb-access-token");
 const refreshToken = Astro.cookies.get("sb-refresh-token");
 
@@ -55,7 +57,7 @@ const email = session.data.user?.email;
 	]} isLoggedIn={isLoggedIn}} />
 	<main class="lg:px-[7.375rem] xl:px-[10.375rem] px-6 py-12 lg:mt-6">
 		<h1 class="text-left text-lg">Welcome back <span class="font-bold">{ email }</span></h1>
-		<ShortenerContextWrapper client:only="react" />
+		<ShortenerContextWrapper client:load />
 	</main>
 	<Footer directory={[
 		{ 

@@ -6,15 +6,15 @@ import {
     Label, 
     Input 
 } from 'react-aria-components';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import delay from 'delay';
 import clipboard from 'clipboardy';
 import PropTypes from 'prop-types';
-import { useState, type FormEvent, type FC } from 'react';
+import { useEffect, useState, type FormEvent, type FC } from 'react';
 
 import { useShortener } from '../contexts/ShortenerContext';
 import { VALID_URL } from '../lib/constants';
-import 'react-toastify/dist/ReactToastify.css';
+import { WidgetSkeleton } from './Skeleton';
 
 interface ShortenedUrl {
     original: string,
@@ -30,11 +30,16 @@ const notifySuccess = (linkAdded: string) => toast.success(`Shortened URL (${lin
 });
 
 export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
-    const { total, cursor, setCursor } = useShortener();
+    const { 
+        total, 
+        cursor, 
+        setCursor,
+        isLoading
+    } = useShortener();
 
     const [longUrlInput, setLongUrlInput] = useState<string>('');
     const [shortenedLinks, setShortenedLinks] = useState<Array<ShortenedUrl>>([]);
-    const currentPath = window.location.pathname.slice(1);
+    const [_window, setWindow] = useState<Window | null>(null);
 
     const queueLink = async (e: FormEvent) => {
         e.preventDefault();
@@ -44,7 +49,7 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
         }
 
         if (!isLoggedIn) {
-            window.location.replace('/login');
+            _window?.location.replace('/login');
             return;
         }
 
@@ -53,24 +58,33 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
         if (!shortened) {
             throw new Error('Failed to create shortened url');
         }
-        
-        setShortenedLinks((prev) => [...prev, {
-            original: longUrlInput,
-            shortened
-        }]);
-
-        await clipboard.write(shortened);
-        notifySuccess(shortened);        
+      
         setLongUrlInput('');
 
-        const last = new Array(Math.ceil(total / 10)).length - 1;
-        
-        if (cursor === last) {
-            setCursor(-1);
+        if (window && (_window?.location.pathname.slice(1) === 'dashboard')) {
+            const last = Math.floor(total / 10);
+
+            if (cursor === last) {
+                setCursor(-1);
+            }
+            
+            await delay(500);
+            setCursor(last);
+            notifySuccess(shortened);
+            await clipboard.write(shortened);
+        } else {
+            setShortenedLinks((prev) => [...prev, {
+                original: longUrlInput,
+                shortened
+            }]);
         }
-        
-        setCursor(last);
     };
+
+    useEffect(() => {
+        if (window) {
+            setWindow(window);
+        }
+    }, []);
 
     return (
         <>
@@ -85,6 +99,7 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
                         value={longUrlInput}
                         placeholder='Shorten a link here...'
                         onChange={({ target }) => setLongUrlInput(target.value)}
+                        disabled={isLoading}
                     />
                     <FieldError className='mt-[0.25rem] font-medium text-[0.75rem] tracking-[0.005em] leading-[1.125rem] text-red italic'>
                         {
@@ -95,13 +110,13 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
                 <Button 
                     type='submit' 
                     className='lg:mt-0 mt-4 lg:ml-6 lg:py-0 py-3 lg:px-12 px-6 rounded-lg hover:bg-light-cyan bg-cyan text-white lg:w-auto w-full lg:max-h-[3.15rem] text-center cursor-pointer disabled:cursor-not-allowed'
-                    /*isDisabled={longUrlInput.length === 0}*/
+                    isDisabled={isLoading}
                 >
                     Shorten
                 </Button>
             </Form>
             {
-                currentPath !== 'dashboard' ? (
+                _window && (_window?.location.pathname.slice(1) !== 'dashboard') ? (
                     <ul className='mt-6 list-none'>
                         { 
                             shortenedLinks.map((shorten: ShortenedUrl, index: number) => (<ShortenedLinkPreview key={index} shorten={shorten} />))
@@ -109,13 +124,6 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
                     </ul>
                 ) : null
             }
-            <ToastContainer 
-                autoClose={10000}
-                stacked={true}
-                draggable={false}
-                hideProgressBar={false}
-                closeOnClick={true}
-            />
         </>
     )
 }

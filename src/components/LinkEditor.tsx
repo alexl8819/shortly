@@ -5,6 +5,7 @@ import { faCheck } from '@fortawesome/free-solid-svg-icons';
 import PropTypes from 'prop-types';
 
 import { VALID_URL } from '../lib/constants';
+import { useShortener } from '../contexts/ShortenerContext';
 
 interface LinkEditorProps {
     url: string,
@@ -13,6 +14,8 @@ interface LinkEditorProps {
 }
 
 export const LinkEditor: FC<LinkEditorProps> = ({ url, shortId, onSuccess }) => {
+    const { updateLink } = useShortener();
+
     const [newUrl, setNewUrl] = useState<string>(url);
     const [hasError, setHasError] = useState<boolean>(false);
 
@@ -24,23 +27,9 @@ export const LinkEditor: FC<LinkEditorProps> = ({ url, shortId, onSuccess }) => 
             return;
         }
 
-        let linkPatchResponse;
+        const { error } = await updateLink(shortId, newUrl);
 
-        const serializedBody = new URLSearchParams();
-        serializedBody.append('shortId', shortId);
-        serializedBody.append('new', newUrl);
-
-        try {
-            linkPatchResponse = await fetch(`/api/link/${shortId}`, {
-                method: 'PATCH',
-                body: serializedBody
-            });
-        } catch (err) {
-            console.error(err);
-            return;
-        }
-
-        if (!linkPatchResponse || !linkPatchResponse.ok) {
+        if (error) {
             setHasError(true);
             return;
         }

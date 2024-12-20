@@ -11,15 +11,19 @@ const ShortenerContext = createContext<{
     total: number,
     cursor: number,
     setCursor: Function,
+    updateLink: Function,
     removeLink: Function,
-    hasNew: boolean
+    hasNew: boolean,
+    isLoading: boolean
 }>({
     links: [],
     total: 0,
     cursor: 0,
     setCursor: () => {},
+    updateLink: () => {},
     removeLink: () => {},
-    hasNew: false
+    hasNew: false,
+    isLoading: false
 });
 
 export const useShortener = () => useContext(ShortenerContext);
@@ -29,16 +33,14 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
     const [total, setTotal] = useState<number>(0);
     const [links, setLinks] = useState<Array<any> | null>(null);
     const [hasNew, setHasNew] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const getOffset = (page: number, limit: number = 10) => page * limit;
 
     const fetchAllLinks = async () => {
         setHasNew(false);
 
-        if (cursor < 0) {
-            setLinks([]);
-            return;
-        }
+        setIsLoading(true);
 
         let linkApiResponse;
 
@@ -62,9 +64,37 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
             }
             return totalRows;
         });
+        setIsLoading(false);
     };
 
+    const updateLink = async (shortId: string, newUrl: string) => {
+        let linkPatchResponse;
+
+        const serializedBody = new URLSearchParams();
+        serializedBody.append('shortId', shortId);
+        serializedBody.append('new', newUrl);
+
+        try {
+            linkPatchResponse = await fetch(`/api/link/${shortId}`, {
+                method: 'PATCH',
+                body: serializedBody
+            });
+        } catch (err) {
+            console.error(err);
+            return Object.freeze({ error: true });
+        }
+
+        if (!linkPatchResponse || !linkPatchResponse.ok) {
+            return Object.freeze({ error: true });
+        }
+
+        return Object.freeze({});
+    }
+
     const removeLink = (shortId: string) => {
+        if (!links) {
+            throw new Error('Unable to delete, no links exist');
+        }
         return async () => {
             let removeResponse;
 
@@ -81,13 +111,20 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
                 return null;
             }
 
-            if (links) {
-                setLinks(links.filter((link) => link.shortId !== shortId));
+            if (links.length <= 1) {
+                setCursor(cursor - 1);
+                return;
             }
+
+            setLinks(links.filter((link) => link.shortId !== shortId));
         };
     }
   
     useEffect(() => {
+        if (cursor < 0) {
+            return;
+        }
+
         fetchAllLinks();
     }, [cursor]);
 
@@ -97,8 +134,10 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
             total,
             cursor,
             setCursor,
+            updateLink,
             removeLink,
-            hasNew
+            hasNew,
+            isLoading
         }}>
             { children }
         </ShortenerContext.Provider>
