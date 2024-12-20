@@ -18,7 +18,7 @@ export const Pagination: FC<PaginationProps> = ({ curPage, nextPage, total, limi
         <ol className='mt-4 list-none flex flex-row justify-center items-center space-x-6 flex-wrap overflow-x-hidden w-full'>
             {
                 pages && pages.length > 1 ? pages.map((_, index) => (
-                    <li key={index} className={`${curPage === index ? 'font-bold' : ''} disabled:cursor-not-allowed`}>
+                    <li key={index} className={`${curPage === index ? 'font-bold rounded-md bg-cyan text-white' : ''} py-1.5 px-3 disabled:cursor-not-allowed`}>
                         <Button 
                             onPress={(_) => nextPage(index)}
                             isDisabled={curPage === index}
