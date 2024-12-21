@@ -37,7 +37,7 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
     const [hasNew, setHasNew] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
-    const getOffset = (page: number, limit: number = 20) => page * limit;
+    const getOffset = (page: number, limit: number = QUERY_LIMIT) => page * limit;
 
     const fetchAllLinks = async () => {
         setHasNew(false);
