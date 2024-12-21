@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import { useEffect, useState, type FormEvent, type FC } from 'react';
 
 import { useShortener } from '../contexts/ShortenerContext';
-import { VALID_URL } from '../lib/constants';
+import { QUERY_LIMIT, VALID_URL } from '../lib/constants';
 import { WidgetSkeleton } from './Skeleton';
 
 interface ShortenedUrl {
@@ -62,7 +62,7 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
         setLongUrlInput('');
 
         if (window && (_window?.location.pathname.slice(1) === 'dashboard')) {
-            const last = Math.floor(total / 10);
+            const last = Math.floor(total / QUERY_LIMIT);
 
             if (cursor === last) {
                 setCursor(-1);

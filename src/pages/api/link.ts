@@ -4,7 +4,7 @@ import decamelizeKeys from 'decamelize-keys';
 import camelcaseKeys from "camelcase-keys";
 
 import { supabaseClient } from "../../lib/client";
-import { VALID_URL } from "../../lib/constants";
+import { QUERY_LIMIT, VALID_URL } from "../../lib/constants";
 
 // TODO: cache non-volatile results
 export const GET: APIRoute = async ({ request }) => {
@@ -26,7 +26,7 @@ export const GET: APIRoute = async ({ request }) => {
     const offset = parseInt(index as string) || 0;
 
     const { data, error } = await supabaseClient.rpc('get_links_with_count', {
-        'p_limit': 10,
+        'p_limit': QUERY_LIMIT,
         'p_offset': offset,
         'userid': userData.user.id
     });

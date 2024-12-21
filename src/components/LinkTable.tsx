@@ -11,6 +11,7 @@ import { Pagination } from './Pagination';
 import { ModalTrigger } from './ModalTrigger';
 
 import { TableSkeleton } from './Skeleton';
+import { QUERY_LIMIT } from '../lib/constants';
 
 interface LinkRow {
     id: number,
@@ -78,7 +79,7 @@ export default function LinkTable () {
 		            </table>
                 )
             }
-            <Pagination curPage={cursor} nextPage={setCursor} total={total} />
+            <Pagination curPage={cursor} nextPage={setCursor} total={total} limit={QUERY_LIMIT} />
             <ConfirmModal title="Are you sure?" content="You are about to delete this link" />
         </ModalProvider>
     );

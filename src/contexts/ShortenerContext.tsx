@@ -6,6 +6,8 @@ import {
     type FC 
 } from 'react';
 
+import { QUERY_LIMIT } from '../lib/constants';
+
 const ShortenerContext = createContext<{
     links: Array<any> | null,
     total: number,
@@ -35,7 +37,7 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
     const [hasNew, setHasNew] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
-    const getOffset = (page: number, limit: number = 10) => page * limit;
+    const getOffset = (page: number, limit: number = 20) => page * limit;
 
     const fetchAllLinks = async () => {
         setHasNew(false);
