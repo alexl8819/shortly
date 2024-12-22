@@ -38,7 +38,7 @@ export const GET: APIRoute = async ({ params }) => {
             is_automated
         ),
         referer
-    `).eq('link', params.id);
+    `).eq('link', params.id); // TODO: offset and limit
 
     if (error) {
         console.error(error);

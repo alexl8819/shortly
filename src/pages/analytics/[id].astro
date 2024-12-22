@@ -1,22 +1,25 @@
 ---
-import { Link } from 'react-aria-components';
 import Layout from '../../layouts/Layout.astro';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer.astro';
 
 import { supabaseClient } from '../../lib/client';
-import AnalyticsMap from '../../components/AnalyticsMap';
+import { AnalyticsContextWrapper } from '../../components/ContextWrapper';
 
-const { id: itemId } = Astro.params;
+const { id } = Astro.params;
+
+if (!id || isNaN(parseInt(id))) {
+	return Astro.redirect('/dashboard');
+}
 
 const accessToken = Astro.cookies.get("sb-access-token");
 const refreshToken = Astro.cookies.get("sb-refresh-token");
 
-if (!accessToken || !refreshToken) {
+const isLoggedIn = typeof accessToken !== 'undefined' && typeof refreshToken !== 'undefined';
+
+if (!isLoggedIn) {
   return Astro.redirect("/login");
 }
-
-const isLoggedIn = typeof accessToken !== 'undefined' && typeof refreshToken !== 'undefined';
 
 let session;
 
@@ -49,15 +52,14 @@ try {
 
 ---
 
-<Layout title={`Shortly - Viewing ${itemId}`}>
+<Layout title={`Shortly - Viewing link analytics for (id: ${id})`}>
 	<Header client:load links={[
 		{ label: 'Features', url: 'features' }, 
 		{ label: 'Pricing', url: 'pricing' }, 
 		{ label: 'Resources', url: 'resources' }
 	]} isLoggedIn={isLoggedIn}} />
 	<main class="lg:px-[7.375rem] xl:px-[10.375rem] px-6 py-12 lg:mt-6">
-		<!--<h1 class="xl:text-[4rem] lg:text-[3.5rem] text-[2.625rem] xl:leading-[5.625rem] lg:leading-[4rem] leading-[3rem] tracking-[-0.066em] font-bold text-very-dark-blue">Stats for <span class="font-bold text-cyan">{ itemId }</span></h1>-->
-		<AnalyticsMap id={itemId} client:load />
+		<AnalyticsContextWrapper id={id} client:load />
 	</main>
 	<Footer directory={[
 		{ 
