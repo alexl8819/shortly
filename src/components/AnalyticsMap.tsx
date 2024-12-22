@@ -148,11 +148,11 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                     </div>
                 </div>
                 <div className='my-8 flex flex-row justify-center items-center text-center w-full'>
-                    {
-                        isEditMode && analyticDataPoints ? (isLoading ? (
-                            <div className='flex flex-row justify-center h-12 w-full'>
+                    {    
+                        isLoading ? (
+                            <div className='flex flex-row justify-center h-10 w-1/3'>
                                 <GenericSkeletonItem />
-                            </div>) : <LinkEditor url={originalUrl} shortId={analyticDataPoints[0].shortId} onSuccess={handleUrlUpdate} />) : (
+                            </div>) : isEditMode && analyticDataPoints ? (<LinkEditor url={originalUrl} shortId={analyticDataPoints[0].shortId} onSuccess={handleUrlUpdate} />) : (
                             <>
                                 <Link className='text-sm font-bold underline underline-offset-2' href={originalUrl}>{ originalUrl }</Link>
                                 <Button onPress={() => setEditMode(true)} className='lg:ml-3 ml-1'>
