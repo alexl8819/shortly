@@ -21,7 +21,7 @@ export const Header: FC<HeaderProps> = ({ links, isLoggedIn }) => {
     <header className={`mt-12 mb-0 lg:px-[7.375rem] xl:px-[10.375rem] px-6`}>
       <div className='flex flex-row lg:justify-start justify-between items-center'>
         <Link href={baseURL}>
-          <img className="header__logo" src={logo.src} alt="shortly - url shortener" loading="eager" />
+          <img src={logo.src} alt="shortly - url shortener" loading="eager" />
         </Link>
 
         <Navbar isLoggedIn={isLoggedIn} isOpen={isOpened} toggle={toggleNav} links={links} />
