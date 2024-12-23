@@ -28,7 +28,7 @@ export const RegisterForm: FC<RegisterFormProps> = ({ siteKey }) => {
                 <Label htmlFor='password' id='password' className='lg:w-auto w-full lg:min-w-[80px] lg:mr-3 lg:mb-0 mb-2 text-left text-white'>Password:</Label>
                 <Input type='password' id='password' name='password' className='lg:w-2/3 w-full py-1.5 px-3 outline-none' /> 
             </div>
-            <div className='lg:ml-[9.5rem] xl:ml-[10rem] mt-[1.25rem] lg:min-h-[80px] lg:w-3/4 w-full'>
+            <div className='lg:ml-[9.5rem] xl:ml-[10.75rem] mt-[1.25rem] lg:min-h-[80px] lg:w-3/4 w-full'>
                 <Input type="hidden" id="captchaToken" name="captchaToken" value={captchaToken} />
                 <HCaptcha ref={captchaRef} sitekey={siteKey} onVerify={(token) => setCaptchaToken(token)} />
             </div>
