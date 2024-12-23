@@ -200,11 +200,6 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                                             devices?.type ? devices.isAutomated ? (<FontAwesomeIcon icon={faRobot} size='1x' />) : (<FontAwesomeIcon icon={ devices.type === 'mobile' ? faMobile : faDesktop } size='1x' />) : null } Accessed using <strong className='font-bold'>{ devices?.type === 'mobile' ? devices.model : devices?.type } { devices?.version }</strong> { devices?.interface ? ` from ${devices.interface}` : '' 
                                         }
                                     </div>
-                                    <div className='flex flex-row justify-end items-center w-full'>
-                                        <Button onPress={() => {}}>
-                                            <FontAwesomeIcon icon={faCaretDown} size='1x' />
-                                        </Button>
-                                    </div>
                                 </div>
                             </li>
                         )) : <ListSkeleton rows={5} />
