@@ -26,7 +26,7 @@ export const Card: FC<CardProps> = ({ id, title, icon, alt, description }) => {
 	}, [icon]);
 	// TODO: use skeleton loader instead of null
 	return (
-		<li key={id} className={`lg:mb-0 mb-20 lg:w-2/6 lg:px-[0.938rem] xl:${id === 1 ? 'mt-6' : (id === 2 ? 'mt-8' : 'mt-0')}`}>
+		<li key={id} className={`lg:mb-0 mb-20 lg:w-2/6 lg:px-[0.938rem] lg:${id === 1 ? 'mt-6' : (id === 2 ? 'mt-8' : 'mt-0')}`}>
 			<article className='flex flex-col lg:justify-start justify-center xl:items-start items-center xl:text-left text-center bg-white'>
 				<div className='xl:ml-6 flex justify-center items-center rounded-full bg-dark-violet w-[5.5rem] h-[5.5rem] lg:-mt-12 -mt-10'>
 					{ iconImg ? <img className='w-[2.5rem] h-[2.5rem]' src={iconImg} alt={alt} loading='lazy' /> : null }
