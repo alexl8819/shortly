@@ -50,8 +50,14 @@ export const Navbar: FC<NavbarProps> = ({ toggle, isLoggedIn, isOpen, links }) =
                     <ul className='lg:mb-0 mb-[1.875rem] xl:w-[16.563rem] lg:space-x-7 list-none flex lg:flex-row flex-col lg:justify-start justify-center items-center'>
                     { 
                         !isLoggedIn ? links.map((link: NavLink, index: number) => (
-                            <Link className='lg:mb-0 mb-[1.875rem] last:mb-0 font-bold text-[1.125rem] hover:text-very-dark-blue lg:text-grayish-violet text-white' key={index} href={baseURL + link.url}>{link.label}</Link> )
-                        ) : <Link className='lg:mb-0 mb-[1.875rem] last:mb-0 font-bold text-[1.125rem] hover:text-very-dark-blue lg:text-grayish-violet text-white' href={baseURL + 'dashboard'}>Dashboard</Link>
+                            <li key={index}>
+                                <Link className='lg:mb-0 mb-[1.875rem] last:mb-0 font-bold text-[1.125rem] hover:text-very-dark-blue lg:text-grayish-violet text-white' href={baseURL + link.url}>{link.label}</Link> 
+                            </li>
+                        )
+                        ) : <li>
+                                <Link className='lg:mb-0 mb-[1.875rem] last:mb-0 font-bold text-[1.125rem] hover:text-very-dark-blue lg:text-grayish-violet text-white' href={baseURL + 'dashboard'}>Dashboard</Link>
+                            </li>
+                            
                     }
                     </ul>
                     <div className='lg:pt-0 pt-8 lg:space-x-7 lg:w-auto flex lg:flex-row flex-col justify-center items-center text-center'>
