@@ -15,18 +15,20 @@ export const GET: APIRoute = async ({ request }) => {
     }
 
     const queryParams = new URL(request.url).searchParams;
-    const index = queryParams.get('index');
+    const index = queryParams.get('index')?.toString();
+    const limit = queryParams.get('limit')?.toString();
 
     if (!index) {
         return new Response(JSON.stringify({
-            error: 'Must defined an index'
+            error: 'index must be defined'
         }), { status: 400 });
     }
 
     const offset = parseInt(index as string) || 0;
+    const _limit = parseInt(limit as string) || QUERY_LIMIT;
 
     const { data, error } = await supabaseClient.rpc('get_links_with_count', {
-        'p_limit': QUERY_LIMIT,
+        'p_limit': _limit,
         'p_offset': offset,
         'userid': userData.user.id
     });

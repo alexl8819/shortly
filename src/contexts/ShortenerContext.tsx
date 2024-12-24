@@ -47,7 +47,7 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
         let linkApiResponse;
 
         try {
-            linkApiResponse = await fetch(`/api/link?index=${getOffset(cursor)}`);
+            linkApiResponse = await fetch(`/api/link?limit=${QUERY_LIMIT}&index=${getOffset(cursor)}`);
         } catch (err) {
             console.error(err);
             return;

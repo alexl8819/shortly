@@ -2,8 +2,9 @@ import { type APIRoute } from "astro";
 import camelcaseKeys from "camelcase-keys";
 import dayjs from 'dayjs';
 import { supabaseClient } from "../../../lib/client";
+import { QUERY_LIMIT } from "../../../lib/constants";
 
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ request, params }) => {
     const { error: userError } = await supabaseClient.auth.getUser();
 
     if (userError) {
@@ -15,6 +16,20 @@ export const GET: APIRoute = async ({ params }) => {
             error: 'Missing required id'
         }), { status: 400 });
     }
+
+    const searchParams = new URL(request.url).searchParams;
+
+    const offset = searchParams.get('offset')?.toString();
+    const limit = searchParams.get('limit')?.toString();
+
+    if (!limit || !offset) {
+        return new Response(JSON.stringify({
+            error: 'Offset or Limit is missing'
+        }), { status: 400 });
+    }
+
+    const _limit = parseInt(limit);
+    const _offset = parseInt(offset);
 
     const { data, error } = await supabaseClient.from('Analytics').select(`
         created_at,
@@ -38,7 +53,7 @@ export const GET: APIRoute = async ({ params }) => {
             is_automated
         ),
         referer
-    `).eq('link', params.id); // TODO: offset and limit
+    `).eq('link', params.id).range((_offset - _limit), (_offset + _limit));
 
     if (error) {
         console.error(error);

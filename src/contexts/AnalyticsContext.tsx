@@ -81,7 +81,7 @@ export const AnalyticsProvider: FC<any> = ({ children }) => {
         let analyticsResponse;
     
         try {
-            analyticsResponse = await fetch(`/api/analytics/${id}?offset=${getOffset(cursor)}`);
+            analyticsResponse = await fetch(`/api/analytics/${id}?limit=${QUERY_LIMIT}&offset=${getOffset(cursor)}`);
         } catch (err) {
             console.error(err);
             return;
