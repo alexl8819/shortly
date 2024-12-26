@@ -6,8 +6,6 @@ import logo from '../assets/logo.svg';
 import Navbar from './Navbar.tsx';
 import { type NavLink } from './Navbar.tsx';
 
-const baseURL = import.meta.env.BASE_URL;
-
 interface HeaderProps {
   links: Array<NavLink>,
   isLoggedIn: boolean
@@ -20,7 +18,7 @@ export const Header: FC<HeaderProps> = ({ links, isLoggedIn }) => {
   return (
     <header className={`mt-12 mb-0 lg:px-[7.375rem] xl:px-[10.375rem] px-6`}>
       <div className='flex flex-row lg:justify-start justify-between items-center'>
-        <Link href={baseURL}>
+        <Link className='hover:animate-bounce' href='/'>
           <img src={logo.src} alt="shortly - url shortener" loading="eager" />
         </Link>
 
