@@ -8,7 +8,7 @@ import decamelizeKeys from "decamelize-keys";
 import { VALID_URL } from "../../../lib/constants";
 import { type CorsOptions, withCors } from "../../../lib/common";
 
-const IS_PROD = import.meta.env.prod;
+const IS_PROD = import.meta.env.PROD;
 const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
 
 const CORS: CorsOptions = {

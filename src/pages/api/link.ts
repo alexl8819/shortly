@@ -7,7 +7,7 @@ import { supabaseClient } from "../../lib/client";
 import { type CorsOptions, withCors } from "../../lib/common";
 import { QUERY_LIMIT, VALID_URL } from "../../lib/constants";
 
-const IS_PROD = import.meta.env.prod;
+const IS_PROD = import.meta.env.PROD;
 const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
 
 const CORS: CorsOptions = {

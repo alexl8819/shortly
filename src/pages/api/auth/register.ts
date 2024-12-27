@@ -3,7 +3,7 @@ import type { APIRoute } from "astro";
 import { supabaseClient } from "../../../lib/client";
 import { type CorsOptions, withCors, validateCaptcha } from "../../../lib/common";
 
-const IS_PROD = import.meta.env.prod;
+const IS_PROD = import.meta.env.PROD;
 const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
 
 const CORS: CorsOptions = {
