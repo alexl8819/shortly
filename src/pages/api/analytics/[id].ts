@@ -2,19 +2,27 @@ import { type APIRoute } from "astro";
 import camelcaseKeys from "camelcase-keys";
 import dayjs from 'dayjs';
 import { supabaseClient } from "../../../lib/client";
-import { QUERY_LIMIT } from "../../../lib/constants";
+import { type CorsOptions, withCors } from "../../../lib/common";
+
+const IS_PROD = import.meta.env.prod;
+const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
+
+const CORS: CorsOptions = {
+    preferredOrigin: IS_PROD ? CORS_DOMAIN : '*',
+    supportedMethods: ['GET', 'OPTIONS']
+};
 
 export const GET: APIRoute = async ({ request, params }) => {
     const { error: userError } = await supabaseClient.auth.getUser();
 
     if (userError) {
-        return new Response('Unauthorized', { status: 401 });
+        return withCors(request, new Response('Unauthorized', { status: 401 }), CORS);
     }
 
     if (!params.id) {
-        return new Response(JSON.stringify({
+        return withCors(request, new Response(JSON.stringify({
             error: 'Missing required id'
-        }), { status: 400 });
+        }), { status: 400 }), CORS);
     }
 
     const searchParams = new URL(request.url).searchParams;
@@ -23,9 +31,9 @@ export const GET: APIRoute = async ({ request, params }) => {
     const limit = searchParams.get('limit')?.toString();
 
     if (!limit || !offset) {
-        return new Response(JSON.stringify({
+        return withCors(request, new Response(JSON.stringify({
             error: 'Offset or Limit is missing'
-        }), { status: 400 });
+        }), { status: 400 }), CORS);
     }
 
     const _limit = parseInt(limit);
@@ -57,7 +65,7 @@ export const GET: APIRoute = async ({ request, params }) => {
 
     if (error) {
         console.error(error);
-        return new Response(null, { status: 500 });
+        return withCors(request, new Response(null, { status: 500 }), CORS);
     }
 
     // If no analytics are found, display the short id and original_url
@@ -66,13 +74,13 @@ export const GET: APIRoute = async ({ request, params }) => {
         
         if (error) {
             console.error(error);
-            return new Response(null, { status: 500 });
+            return withCors(request, new Response(null, { status: 500 }), CORS);
         }
         
-        return new Response(JSON.stringify({
+        return withCors(request, new Response(JSON.stringify({
             total: 0,
             rows: camelcaseKeys(data)
-        }), { status: 200 });
+        }), { status: 200 }), CORS);
     }
 
     const { count: total } = await supabaseClient.from('Analytics').select('*', { count: 'exact', head: true }).eq('link', params.id);
@@ -90,8 +98,8 @@ export const GET: APIRoute = async ({ request, params }) => {
         })); 
     });
 
-    return new Response(JSON.stringify({
+    return withCors(request, new Response(JSON.stringify({
         total,
         rows: modifiedRows
-    }), { status: 200 });
+    }), { status: 200 }), CORS);
 } 

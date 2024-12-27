@@ -6,12 +6,21 @@ import { isBot, isAIBot } from 'ua-parser-js/helpers';
 import { supabaseClient } from "../../../lib/client";
 import decamelizeKeys from "decamelize-keys";
 import { VALID_URL } from "../../../lib/constants";
+import { type CorsOptions, withCors } from "../../../lib/common";
 
-export const DELETE: APIRoute = async ({ params }) => {
+const IS_PROD = import.meta.env.prod;
+const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
+
+const CORS: CorsOptions = {
+    preferredOrigin: IS_PROD ? CORS_DOMAIN : '*',
+    supportedMethods: ['PATCH', 'DELETE', 'OPTIONS']
+};
+
+export const DELETE: APIRoute = async ({ request, params }) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser();
 
     if (userError) {
-        return new Response('Unauthorized', { status: 401 });
+        return withCors(request, new Response('Unauthorized', { status: 401 }), CORS);
     }
 
     const { id: shortId } = params;
@@ -20,19 +29,19 @@ export const DELETE: APIRoute = async ({ params }) => {
 
     if (delError) {
         console.error(delError);
-        return new Response(JSON.stringify({
+        return withCors(request, new Response(JSON.stringify({
             error: 'Failed to delete link'
-        }), { status: 500 });
+        }), { status: 500 }), CORS);
     }
 
-    return new Response(null, { status: 204 });
+    return withCors(request, new Response(null, { status: 204 }), CORS);
 }
 
 export const PATCH: APIRoute = async ({ request }) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser();
 
     if (userError) {
-        return new Response('Unauthorized', { status: 401 });
+        return withCors(request, new Response('Unauthorized', { status: 401 }), CORS);
     }
 
     const form = await request.formData();
@@ -40,19 +49,19 @@ export const PATCH: APIRoute = async ({ request }) => {
     const newUrl = form.get('new')?.toString();
 
     if (!newUrl) {
-        return new Response(JSON.stringify({
+        return withCors(request, new Response(JSON.stringify({
             error: 'Missing updated URL'
-        }), { status: 400 });
+        }), { status: 400 }), CORS);
     } else if (!shortId) {
-        return new Response(JSON.stringify({
+        return withCors(request, new Response(JSON.stringify({
             error: 'Missing shortId'
-        }), { status: 400 });
+        }), { status: 400 }), CORS);
     }
 
     if (!VALID_URL.test(newUrl)) {
-        return new Response(JSON.stringify({
+        return withCors(request, new Response(JSON.stringify({
             error: 'Invalid URL provided'
-        }), { status: 400 });
+        }), { status: 400 }), CORS);
     }
 
     const { error } = await supabaseClient.from('Links').update(decamelizeKeys({
@@ -61,10 +70,14 @@ export const PATCH: APIRoute = async ({ request }) => {
 
     if (error) {
         console.error(error);
-        return new Response(null, { status: 500 });
+        return withCors(request, new Response(null, { status: 500 }), CORS);
     }
 
-    return new Response(null, { status: 200 });
+    return withCors(request, new Response(null, { status: 200 }), CORS);
+}
+
+const customCors: CorsOptions = {
+    supportedMethods: ['GET', 'OPTIONS']
 }
 
 export const GET: APIRoute = async ({ request, params, redirect }) => {
@@ -74,34 +87,33 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
     const { data, error } = await supabaseClient.from('Links').select('id,original_url').eq('short_id', shortId).limit(1);
 
     if (error) {
-        return new Response(JSON.stringify({
+        return withCors(request, new Response(JSON.stringify({
             error: error.message
-        }), { status: 500 });
+        }), { status: 500 }), customCors);
     }
 
-    let row;
-
-    if (data.length) {
-        row = camelcaseKeys(data[0]);
-    } else if (!row) {
-        return redirect('/404');
+    if (!data) {
+        return withCors(request, redirect('/404'), customCors);
     }
+
+    const row = camelcaseKeys(data[0]); 
 
     const sourceAddress = headers.get('x-forwarded-for') || headers.get('cf-connecting-ip') || headers.get('x-real-ip');
     const userAgent = headers.get('user-agent');
     const referer = headers.get('referer');
 
-    // TODO: should probably be moved to Analytics as a long running fn?
     if (sourceAddress) {
         const { data, error } = await supabaseClient.from('Geolocation').select('id').eq('ip_address', sourceAddress);
         
         if (error) {
             console.error(error);
-            return new Response(null, {
+            return withCors(request, new Response(null, {
                 status: 500
-            })
+            }), customCors);
         }
 
+        // TODO: should probably be cron job?
+        // WARNING: Possible race condition
         // If no entry exists for this ip address, add its initial data
         if (!data || !data.length) {
             const metadata = await getAddressMetadata(sourceAddress);
@@ -117,9 +129,9 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
 
                 if (geoError) {
                     console.error(geoError);
-                    return new Response(null, {
+                    return withCors(request, new Response(null, {
                         status: 500
-                    });
+                    }), customCors);
                 }
             }
         }
@@ -130,7 +142,7 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
         
         if (devicesError) {
             console.error(devicesError);
-            return new Response(null, { status: 500 });
+            return withCors(request, new Response(null, { status: 500 }), customCors);
         }
 
         if (!data || !data.length) {
@@ -155,9 +167,9 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
 
             if (userAgentError) {
                 console.error(userAgentError);
-                return new Response(null, {
+                return withCors(request, new Response(null, {
                     status: 500
-                });
+                }), customCors);
             }
         }
     }
@@ -185,12 +197,12 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
 
     if (analyicsError) {
         console.error(analyicsError);
-        return new Response(null, {
+        return withCors(request, new Response(null, {
             status: 500
-        });
+        }), customCors);
     }
 
-    return redirect(row.originalUrl);
+    return withCors(request, redirect(row.originalUrl), customCors);
 }
 
 interface AddressMetadata {

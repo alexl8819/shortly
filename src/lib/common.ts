@@ -35,5 +35,31 @@ export async function validateCaptcha (token: string, secret: string): Promise<b
         return false;
     }
 
-    return result['success'];
+    return result.success;
+}
+
+export interface CorsOptions {
+    supportedMethods: Array<string>,
+    headers?: Array<string>,
+    preferredOrigin?: string
+}
+
+export function withCors (req: Request, res: Response, options: CorsOptions) {
+    res.headers.set('Access-Control-Allow-Origin', options && options.preferredOrigin ? options.preferredOrigin : '*');
+
+    if (options && options.supportedMethods.length) {
+        res.headers.set('Access-Control-Allow-Methods', options.supportedMethods.map((method) => method.toUpperCase()).join(', '));
+    }
+    
+    if (options && options.headers && options.headers.length) {
+        res.headers.set('Access-Control-Allow-Headers', options.headers.map(
+            (header) => header[0].toUpperCase() + header.slice(1)
+        ).join(', ') || 'Content-Type, Authorization');
+    }
+    
+    if (req.method === 'OPTIONS') {
+        return new Response(null, { status: 200 });
+    }
+
+    return res;
 }

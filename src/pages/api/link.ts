@@ -4,14 +4,23 @@ import decamelizeKeys from 'decamelize-keys';
 import camelcaseKeys from "camelcase-keys";
 
 import { supabaseClient } from "../../lib/client";
+import { type CorsOptions, withCors } from "../../lib/common";
 import { QUERY_LIMIT, VALID_URL } from "../../lib/constants";
+
+const IS_PROD = import.meta.env.prod;
+const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
+
+const CORS: CorsOptions = {
+    preferredOrigin: IS_PROD ? CORS_DOMAIN : '*',
+    supportedMethods: ['GET', 'POST', 'OPTIONS']
+};
 
 // TODO: cache non-volatile results
 export const GET: APIRoute = async ({ request }) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser();
 
     if (userError) {
-        return new Response('Unauthorized', { status: 401 });
+        return withCors(request, new Response('Unauthorized', { status: 401 }), CORS);
     }
 
     const queryParams = new URL(request.url).searchParams;
@@ -19,9 +28,9 @@ export const GET: APIRoute = async ({ request }) => {
     const limit = queryParams.get('limit')?.toString();
 
     if (!index) {
-        return new Response(JSON.stringify({
+        return withCors(request, new Response(JSON.stringify({
             error: 'index must be defined'
-        }), { status: 400 });
+        }), { status: 400 }), CORS);
     }
 
     const offset = parseInt(index as string) || 0;
@@ -35,7 +44,7 @@ export const GET: APIRoute = async ({ request }) => {
     
     if (error) {
         console.error(error);
-        return new Response(null, { status: 500 });
+        return withCors(request, new Response(null, { status: 500 }), CORS);
     }
 
     let rows: Array<any> = [];
@@ -64,7 +73,7 @@ export const GET: APIRoute = async ({ request }) => {
     
         if (error) {
             console.error(error);
-            return new Response(null, { status: 500 });
+            return withCors(request, new Response(null, { status: 500 }), CORS);
         }
 
         const clicksMap = new Map(analyticsFound.map((r: any) => [r.linkid, r.clicks]));
@@ -74,14 +83,14 @@ export const GET: APIRoute = async ({ request }) => {
         }));
     }
 
-    return new Response(JSON.stringify({ totalRows, rows }), { status: 200 });
+    return withCors(request, new Response(JSON.stringify({ totalRows, rows }), { status: 200 }), CORS);
 }
 
 export const POST: APIRoute = async ({ request }) => {
     const { data, error: userError } = await supabaseClient.auth.getUser();
 
     if (userError) {
-        return new Response('Unauthorized', { status: 401 });
+        return withCors(request, new Response('Unauthorized', { status: 401 }), CORS);
     }
 
     const form = await request.formData();
@@ -89,15 +98,15 @@ export const POST: APIRoute = async ({ request }) => {
     const originalUrl = form.get('originalUrl')?.toString();
 
     if (!originalUrl) {
-        return new Response(JSON.stringify({
+        return withCors(request, new Response(JSON.stringify({
             error: 'Missing url'
-        }), { status: 400 });
+        }), { status: 400 }), CORS);
     }
 
     if (!VALID_URL.test(originalUrl)) {
-        return new Response(JSON.stringify({
+        return withCors(request, new Response(JSON.stringify({
             error: 'originalUrl is not a valid URL'
-        }), { status: 400 });
+        }), { status: 400 }), CORS);
     }
 
     const shortId = nanoid(6);
@@ -110,13 +119,13 @@ export const POST: APIRoute = async ({ request }) => {
     const { error: sqlError } = await supabaseClient.from('Links').insert(decamelizeKeys(insertBody));
 
     if (sqlError) {
-        return new Response(JSON.stringify({
+        return withCors(request, new Response(JSON.stringify({
             error: sqlError.message
-        }), { status: 500 });
+        }), { status: 500 }), CORS);
     }
 
-    return new Response(JSON.stringify({
+    return withCors(request, new Response(JSON.stringify({
         url: `${import.meta.env.REDIRECT_LINK_DOMAIN}${shortId}`
-    }), { status: 200 });
+    }), { status: 200 }), CORS);
 }
   

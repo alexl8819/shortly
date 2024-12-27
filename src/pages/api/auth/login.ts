@@ -1,7 +1,16 @@
 import type { APIRoute } from "astro";
 
 import { supabaseClient } from "../../../lib/client";
+import { type CorsOptions, withCors } from "../../../lib/common";
 import decamelizeKeys from "decamelize-keys";
+
+const IS_PROD = import.meta.env.prod;
+const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
+
+const CORS: CorsOptions = {
+    preferredOrigin: IS_PROD ? CORS_DOMAIN : '*',
+    supportedMethods: ['POST', 'OPTIONS']
+};
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     const form = await request.formData();
@@ -10,7 +19,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     const password = form.get('password')?.toString();
 
     if (!email || !password) {
-        return redirect(`/login?error=${encodeURIComponent('Missing email or password')}`);
+        return withCors(request, redirect(`/login?error=${encodeURIComponent('Missing email or password')}`), CORS);
     }
 
     const { data, error } = await supabaseClient.auth.signInWithPassword({
@@ -19,14 +28,14 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     });
 
     if (error) {
-        return redirect(`/login?error=${encodeURIComponent(error.message)}`);
+        return withCors(request, redirect(`/login?error=${encodeURIComponent(error.message)}`), CORS);
     }
 
     const { data: userCreatedData, error: userCreatedError } = await supabaseClient.from('Users').select('id').eq('user_id', data.user.id);
 
     if (userCreatedError) {
         console.error(userCreatedError);
-        return new Response(null, { status: 500 });
+        return withCors(request, redirect(`/login?error=${encodeURIComponent('Something went wrong. Please try again later.')}`), CORS);
     }
 
     if (!userCreatedData || !userCreatedData.length) {
@@ -36,7 +45,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
         if (userError) {
             console.error(userError);
-            return redirect(`/login?error=${encodeURIComponent('Unable to create user at this time. Please try again later.')}`)
+            return withCors(request, redirect(`/login?error=${encodeURIComponent('Unable to create user at this time. Please try again later.')}`), CORS);
         }
     }
 
@@ -55,5 +64,5 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         path: '/',
     });
 
-    return redirect('/dashboard');
+    return withCors(request, redirect('/dashboard'), CORS);
 }
