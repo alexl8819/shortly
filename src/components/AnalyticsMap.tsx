@@ -187,7 +187,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                 </div>
                 <ul className='mt-4 list-none space-y-4 w-full'>
                     {
-                        !isLoading && totalVistors > 0 && analyticDataPoints ? analyticDataPoints.reverse().map(({ createdAt, geolocation, devices, referer }, index) => (
+                        !isLoading && totalVistors > 0 && analyticDataPoints ? analyticDataPoints.map(({ createdAt, geolocation, devices, referer }, index) => (
                             <li key={index} className='p-4 mb-4 last:mb-0 hover:bg-gray bg-opacity-20 w-full'>
                                 <div className='flex flex-col justify-start items-start w-full'>
                                     <p className='text-sm'>

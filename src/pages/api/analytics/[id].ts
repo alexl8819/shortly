@@ -61,7 +61,7 @@ export const GET: APIRoute = async ({ request, params }) => {
             is_automated
         ),
         referer
-    `).eq('link', params.id).range((_offset - _limit), (_offset + _limit));
+    `).eq('link', params.id).range((_offset - _limit), (_offset + _limit)).order('created_at', { ascending: false });
 
     if (error) {
         console.error(error);
