@@ -54,7 +54,7 @@ export function withCors (req: Request, res: Response, options: CorsOptions) {
     if (options && options.headers && options.headers.length) {
         res.headers.set('Access-Control-Allow-Headers', options.headers.map(
             (header) => header[0].toUpperCase() + header.slice(1)
-        ).join(', ') || 'Content-Type, Authorization');
+        ).join(', ') || 'Content-Type');
     }
     
     if (req.method === 'OPTIONS') {
