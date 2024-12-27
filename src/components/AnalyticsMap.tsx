@@ -32,6 +32,7 @@ import LinkEditor from './LinkEditor';
 import { useAnalytics, type AnalyticsDataPoint } from '../contexts/AnalyticsContext';
 import { CHART_OPTIONS } from '../lib/constants';
 import { ChartSkeleton, GenericSkeletonItem, ListSkeleton } from './Skeleton';
+import { useShortener } from '../contexts/ShortenerContext';
 
 ChartJS.register(
     CategoryScale,
@@ -68,6 +69,10 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
         isLoading 
     } = useAnalytics();
 
+    const {
+        setCursor: setShortenerCursor
+    } = useShortener();
+
     const [isEditMode, setEditMode] = useState<boolean>(false);
 
     const chartRef = useRef(null);
@@ -89,6 +94,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
             return;
         }
         
+        setShortenerCursor(-1);
         fetchAllAnalytics(id);
 
         window.addEventListener('resize', handleResize);
