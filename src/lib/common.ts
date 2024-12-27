@@ -45,22 +45,24 @@ export interface CorsOptions {
 }
 
 export function withCors (req: Request, res: Response, options: CorsOptions) {
-    res.headers.set('Access-Control-Allow-Origin', options && options.preferredOrigin ? options.preferredOrigin : '*');
+    let r = res;
+
+    if (req.method === 'OPTIONS') {
+        r = new Response(null, { status: 200 });
+        r.headers.set('Access-Control-Max-Age', '86400');
+    }
+
+    r.headers.set('Access-Control-Allow-Origin', options && options.preferredOrigin ? options.preferredOrigin : '*');
 
     if (options && options.supportedMethods.length) {
-        res.headers.set('Access-Control-Allow-Methods', options.supportedMethods.map((method) => method.toUpperCase()).join(', '));
+        r.headers.set('Access-Control-Allow-Methods', options.supportedMethods.map((method) => method.toUpperCase()).join(', '));
     }
     
     if (options && options.headers && options.headers.length) {
-        res.headers.set('Access-Control-Allow-Headers', options.headers.map(
+        r.headers.set('Access-Control-Allow-Headers', options.headers.map(
             (header) => header[0].toUpperCase() + header.slice(1)
         ).join(', ') || 'Content-Type');
     }
-    
-    if (req.method === 'OPTIONS') {
-        res.headers.set('Access-Control-Max-Age', '86400');
-        return new Response(null, { status: 200 });
-    }
 
-    return res;
+    return r;
 }
