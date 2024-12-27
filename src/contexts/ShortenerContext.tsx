@@ -1,8 +1,7 @@
 import { 
     createContext, 
     useContext, 
-    useState, 
-    useEffect,
+    useState,
     type FC 
 } from 'react';
 
