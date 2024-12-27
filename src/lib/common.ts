@@ -58,6 +58,7 @@ export function withCors (req: Request, res: Response, options: CorsOptions) {
     }
     
     if (req.method === 'OPTIONS') {
+        res.headers.set('Access-Control-Max-Age', '86400');
         return new Response(null, { status: 200 });
     }
 
