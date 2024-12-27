@@ -109,7 +109,7 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
                 </TextField>
                 <Button 
                     type='submit' 
-                    className='lg:mt-0 mt-4 lg:ml-6 lg:py-0 py-3 lg:px-12 px-6 rounded-lg hover:bg-light-cyan bg-cyan text-white lg:w-auto w-full lg:max-h-[3.15rem] text-center cursor-pointer disabled:cursor-not-allowed'
+                    className='lg:mt-0 mt-4 lg:ml-6 lg:py-0 py-3 lg:px-12 px-6 rounded-lg hover:bg-light-cyan bg-cyan text-white lg:w-auto w-full lg:max-h-[3.15rem] text-center cursor-pointer disabled:bg-gray disabled:cursor-not-allowed'
                     isDisabled={isLoading}
                 >
                     Shorten
