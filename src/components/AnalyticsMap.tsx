@@ -69,10 +69,6 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
         isLoading 
     } = useAnalytics();
 
-    const {
-        setCursor: setShortenerCursor
-    } = useShortener();
-
     const [isEditMode, setEditMode] = useState<boolean>(false);
 
     const chartRef = useRef(null);
@@ -94,7 +90,6 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
             return;
         }
         
-        setShortenerCursor(-1);
         fetchAllAnalytics(id);
 
         window.addEventListener('resize', handleResize);

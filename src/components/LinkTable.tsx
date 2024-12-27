@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link } from 'react-aria-components';
 import clipboard from 'clipboardy';
 import { toast } from 'react-toastify';
@@ -28,9 +29,9 @@ export default function LinkTable () {
         cursor, 
         setCursor,
         hasNew,
-        isLoading
+        isLoading,
+        fetchAllLinks
     } = useShortener();
-
 
     if (links && !links.length) {
         return (
@@ -42,12 +43,20 @@ export default function LinkTable () {
     }
 
     const doCopy = async (shortIdLink: string) => {
-        await clipboard.write(shortIdLink);
         toast.info(`Copied ${shortIdLink} to clipboard`, {
             role: 'alert'
         });
+        await clipboard.write(shortIdLink);
     };
     
+    useEffect(() => {
+        if (cursor < 0) {
+            return;
+        }
+
+        fetchAllLinks();
+    }, [cursor]);
+
     return (
         <ModalProvider>
             {

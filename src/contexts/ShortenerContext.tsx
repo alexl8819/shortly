@@ -13,6 +13,7 @@ const ShortenerContext = createContext<{
     total: number,
     cursor: number,
     setCursor: Function,
+    fetchAllLinks: Function,
     updateLink: Function,
     removeLink: Function,
     hasNew: boolean,
@@ -22,6 +23,7 @@ const ShortenerContext = createContext<{
     total: 0,
     cursor: 0,
     setCursor: () => {},
+    fetchAllLinks: () => {},
     updateLink: () => {},
     removeLink: () => {},
     hasNew: false,
@@ -121,14 +123,6 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
             setLinks(links.filter((link) => link.shortId !== shortId));
         };
     }
-  
-    useEffect(() => {
-        if (cursor < 0) {
-            return;
-        }
-
-        fetchAllLinks();
-    }, [cursor]);
 
     return (
         <ShortenerContext.Provider value={{ 
@@ -136,6 +130,7 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
             total,
             cursor,
             setCursor,
+            fetchAllLinks,
             updateLink,
             removeLink,
             hasNew,

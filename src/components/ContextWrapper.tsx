@@ -27,11 +27,11 @@ interface AnalyticsContextWrapperProps {
 
 export const AnalyticsContextWrapper: FC<AnalyticsContextWrapperProps> = ({ id }) => {
     return (
-        <ShortenerProvider>
-            <AnalyticsProvider>
+        <AnalyticsProvider>
+            <ShortenerProvider>
                 <AnalyticsMap id={id} />
-            </AnalyticsProvider>
+            </ShortenerProvider>
             <ToastContainer autoClose={3000} transition={Zoom} />
-        </ShortenerProvider>
+        </AnalyticsProvider>
     )
 }
