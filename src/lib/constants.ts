@@ -20,3 +20,4 @@ export const DATETIME_PICKER_OPTIONS = {
     inline: true
 }
 export const MINIMUM_MINUTE_DIFF = 5;
+export const MINIMUM_DATETIME = Date.now() + (60 * 1000 * (MINIMUM_MINUTE_DIFF + 1));

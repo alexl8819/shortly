@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type FC } from 'react';
+import { useState, useEffect, useRef, useReducer, type FC } from 'react';
 import { Breadcrumb, Breadcrumbs, Button, Link } from 'react-aria-components';
 import {
     Chart as ChartJS,
@@ -25,6 +25,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 import PropTypes from 'prop-types';
+import delay from 'delay';
 
 import Pagination from './Pagination';
 import LinkEditor from './LinkEditor';
@@ -72,7 +73,6 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
         isLoading 
     } = useAnalytics();
 
-    const [expirationSet, setExpirationSet] = useState<boolean>(false);
     const [isEditMode, setEditMode] = useState<boolean>(false);
 
     const chartRef = useRef(null);
@@ -89,10 +89,12 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
         setEditMode(false);
     }
 
-    const handleExpirationUpdate = (shortId: string, hasSuccess: boolean) => {
+    const handleExpirationUpdate = async (shortId: string, hasSuccess: boolean) => {
         if (hasSuccess) {
             toast.success(`Successfully set expiration date for (${shortId})`);
-            setExpirationSet(hasSuccess);
+            setCursor(null);
+            await delay(500);
+            setCursor(cursor);
             return;
         }
         toast.error(`Failed to set expiration date for (${shortId})`);
@@ -155,7 +157,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                                         </div>
                                     </div>
                                 )
-                            ) : (expirationSet ? null : <ModalDatePickerTrigger shortId={analyticDataPoints[0].shortId} callback={handleExpirationUpdate} />)
+                            ) : (<ModalDatePickerTrigger shortId={analyticDataPoints[0].shortId} callback={handleExpirationUpdate} />)
                         ) : (
                             <div className='flex flex-row justify-center items-center h-10 w-40'>
                                 <GenericSkeletonItem />

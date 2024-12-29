@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 
 import { useShortener } from '../contexts/ShortenerContext';
 import { useModal } from '../contexts/ModalContext';
-import { DATETIME_PICKER_OPTIONS, MINIMUM_MINUTE_DIFF } from '../lib/constants';
+import { DATETIME_PICKER_OPTIONS, MINIMUM_DATETIME, MINIMUM_MINUTE_DIFF } from '../lib/constants';
 
 import 'flatpickr/dist/themes/material_blue.css';
 
@@ -93,7 +93,7 @@ export const ChooseDateModal: FC<ChooseDateModalProps> = ({ title, date }) => {
                         <Flatpickr 
                             ref={flatpickrRef} 
                             data-enable-time 
-                            options={Object.assign({}, DATETIME_PICKER_OPTIONS, { minDate: Date.now() + (60 * 1000 * MINIMUM_MINUTE_DIFF) })} 
+                            options={Object.assign({}, DATETIME_PICKER_OPTIONS, { minDate: MINIMUM_DATETIME })} 
                             defaultValue={date.toISOString()} 
                             onChange={handleDatetimeChange}
                             className='hidden'
