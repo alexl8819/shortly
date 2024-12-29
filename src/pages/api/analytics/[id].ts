@@ -2,7 +2,7 @@ import { type APIRoute } from "astro";
 import camelcaseKeys from "camelcase-keys";
 import dayjs from 'dayjs';
 import { supabaseClient } from "../../../lib/client";
-import { type CorsOptions, withCors } from "../../../lib/common";
+import { type CorsOptions, hasExpired, withCors } from "../../../lib/common";
 
 const IS_PROD = import.meta.env.PROD;
 const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
@@ -43,7 +43,8 @@ export const GET: APIRoute = async ({ request, params }) => {
         created_at,
         Links (
             short_id,
-            original_url
+            original_url,
+            expires_at
         ),
         Geolocation (
             ip_address,
@@ -68,18 +69,26 @@ export const GET: APIRoute = async ({ request, params }) => {
         return withCors(request, new Response(null, { status: 500 }), CORS);
     }
 
-    // If no analytics are found, display the short id and original_url
+    // If no analytics are found, display the short id, original_url and expires_at fields at minimum
     if (!data.length) {
-        const { data, error } = await supabaseClient.from('Links').select('short_id,original_url').eq('id', params.id);
+        const { data, error } = await supabaseClient.from('Links').select('short_id,original_url,expires_at').eq('id', params.id);
         
         if (error) {
             console.error(error);
             return withCors(request, new Response(null, { status: 500 }), CORS);
         }
+
+        const rows = camelcaseKeys(data).map((row) => {
+            const { expiresAt, ...keys } = row;
+            const isExpired = expiresAt ? hasExpired(expiresAt) : false;
+            return Object.assign({}, isExpired ? keys : row, {
+                expired: isExpired
+            });
+        });
         
         return withCors(request, new Response(JSON.stringify({
             total: 0,
-            rows: camelcaseKeys(data)
+            rows
         }), { status: 200 }), CORS);
     }
 
@@ -87,9 +96,14 @@ export const GET: APIRoute = async ({ request, params }) => {
 
     const modifiedRows = data.map((dp: any) => {
         const { Links, ...otherKeys } = dp;
+        const isExpired = hasExpired(dp.Links.expires_at) || false;
+        if (!isExpired) {
+            otherKeys['expires_at'] = dp.Links.expires_at;
+        }
         return camelcaseKeys(Object.assign({}, otherKeys, {
             created_at: dayjs(dp.created_at),
             short_id: dp.Links.short_id,
+            expired: isExpired,
             original_url: dp.Links.original_url,
             Geolocation: camelcaseKeys(Object.assign({}, dp.Geolocation, {
                 ipAddress: dp.Geolocation.ip_address.replace(/(\d+).(\d+)$/g, '*.*')

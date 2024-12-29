@@ -15,10 +15,9 @@ import { Line } from 'react-chartjs-2';
 import dayjs from 'dayjs';
 import * as utcPlugin from 'dayjs/plugin/utc';
 import * as timezonePlugin from 'dayjs/plugin/timezone';
+import * as relativePlugin from 'dayjs/plugin/relativeTime';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-    faUsers,
-    faCaretDown, 
+import { 
     faRobot, 
     faMobile, 
     faDesktop,
@@ -32,7 +31,10 @@ import LinkEditor from './LinkEditor';
 import { useAnalytics, type AnalyticsDataPoint } from '../contexts/AnalyticsContext';
 import { CHART_OPTIONS } from '../lib/constants';
 import { ChartSkeleton, GenericSkeletonItem, ListSkeleton } from './Skeleton';
-import { useShortener } from '../contexts/ShortenerContext';
+
+import { ModalProvider } from '../contexts/ModalContext';
+import { ModalDatePickerTrigger } from './ModalTrigger';
+import { ChooseDateModal } from './Modal';
 
 ChartJS.register(
     CategoryScale,
@@ -49,6 +51,7 @@ ChartJS.defaults.scale.grid.display = false;
 
 dayjs.extend(utcPlugin.default);
 dayjs.extend(timezonePlugin.default);
+dayjs.extend(relativePlugin.default);
 
 interface AnalyticsMapProps {
     id: string | undefined
@@ -69,6 +72,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
         isLoading 
     } = useAnalytics();
 
+    const [expirationSet, setExpirationSet] = useState<boolean>(false);
     const [isEditMode, setEditMode] = useState<boolean>(false);
 
     const chartRef = useRef(null);
@@ -83,6 +87,15 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
         toast.success(`Successfully updated url to ${nUrl}`);
         setOriginalUrl(nUrl);
         setEditMode(false);
+    }
+
+    const handleExpirationUpdate = (shortId: string, hasSuccess: boolean) => {
+        if (hasSuccess) {
+            toast.success(`Successfully set expiration date for (${shortId})`);
+            setExpirationSet(hasSuccess);
+            return;
+        }
+        toast.error(`Failed to set expiration date for )${shortId})`);
     }
     
     useEffect(() => {
@@ -100,7 +113,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
     }, [cursor]);
 
     return (
-        <>
+        <ModalProvider>
             <Breadcrumbs className="mb-8 flex flex-row justify-start items-center space-x-4 w-full">
                 <Breadcrumb>
                     <Link className="hover:text-gray" href='/dashboard'>Dashboard</Link>
@@ -113,7 +126,44 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                 </Breadcrumb>
             </Breadcrumbs>
             <div className='my-4 flex flex-col'>
-                <div className='flex flex-row justify-evenly items-center bg-white space-x-2 w-full'>
+                <div className='my-2 flex flex-col justify-end items-end w-full'>
+                    { 
+                        analyticDataPoints && !isLoading ? (
+                            analyticDataPoints[0].expired || analyticDataPoints[0].expiresAt ? (
+                                analyticDataPoints[0].expired ? (
+                                    <div className='flex flex-row space-x-2 items-center'>
+                                        <div className='relative flex h-3 w-3'>
+                                            <div className='animate-ping absolute inline-flex h-full w-full rounded-full bg-gray opacity-75'></div>
+                                            <div className='relative inline-flex rounded-full h-3 w-3 bg-red'></div>
+                                        </div>
+                                        <p className='text-grayish-violet font-bold'>This link has expired.</p>
+                                    </div>
+                                ) : (
+                                    <div className='flex flex-row space-x-2 items-center'>
+                                        <div className='relative flex h-3 w-3'>
+                                            <div className='animate-ping absolute inline-flex h-full w-full rounded-full bg-light-cyan opacity-75'></div>
+                                            <div className='relative inline-flex rounded-full h-3 w-3 bg-cyan'></div>
+                                        </div>
+                                        <div className='text-grayish-violet hover:text-dark-violet cursor-pointer'>
+                                            This link expires
+                                            <span className='ml-1 font-bold underline underline-offset-2'>
+                                                { 
+                                                    `${dayjs(analyticDataPoints[0].expiresAt).diff(dayjs(), 'year') >= 1 ? 
+                                                        'on ' + dayjs(analyticDataPoints[0].expiresAt).format('MM/DD/YYYY hh:MM A') : dayjs(analyticDataPoints[0].expiresAt).fromNow()}` 
+                                                }
+                                            </span>
+                                        </div>
+                                    </div>
+                                )
+                            ) : (expirationSet ? null : <ModalDatePickerTrigger shortId={analyticDataPoints[0].shortId} callback={handleExpirationUpdate} />)
+                        ) : (
+                            <div className='flex flex-row justify-center items-center h-10 w-40'>
+                                <GenericSkeletonItem />
+                            </div>
+                        ) 
+                    }
+                </div>
+                <div className='flex flex-row justify-evenly items-center space-x-2 w-full'>
                     <div className='text-center'>
                         <div className='font-bold text-[4rem]'>
                             { 
@@ -206,9 +256,10 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                         )) : <ListSkeleton rows={5} />
                     }
                 </ul>
+                <ChooseDateModal title='Choose an expiration date' date={dayjs().toDate()} />
                 <Pagination total={totalVistors} curPage={cursor} nextPage={(page: number) => setCursor(page)} />
             </div>
-        </>
+        </ModalProvider>
     );
 };
 

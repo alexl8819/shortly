@@ -9,17 +9,19 @@ import { useShortener } from '../contexts/ShortenerContext';
 import { ModalProvider } from '../contexts/ModalContext';
 import { ConfirmModal } from './Modal';
 import { Pagination } from './Pagination';
-import { ModalTrigger } from './ModalTrigger';
+import { ModalDeleteTrigger } from './ModalTrigger';
 
 import { TableSkeleton } from './Skeleton';
 import { QUERY_LIMIT } from '../lib/constants';
+import { hasExpired } from '../lib/common';
 
 interface LinkRow {
     id: number,
     originalUrl: string,
     shortId: string,
     shortUrl: string,
-    clicks: number
+    clicks: number,
+    expiresAt: string | Date | null
 }
 
 export default function LinkTable () {
@@ -48,6 +50,14 @@ export default function LinkTable () {
         });
         await clipboard.write(shortIdLink);
     };
+
+    const actionResultCallback = (shortId: string, hasSuccess: boolean) => {
+        if (hasSuccess) {
+            toast.success(`Successfully removed (${shortId})`);
+            return;
+        }
+        toast.error(`Failed to remove link (${shortId})`);
+    }
     
     useEffect(() => {
         if (cursor < 0) {
@@ -78,9 +88,16 @@ export default function LinkTable () {
 				                        <td className='truncate overflow-x-hidden border-t border-gray w-1/2'>
                                             <Link href={`/analytics/${link.id}`}>{ link.originalUrl }</Link>
                                         </td>
-				                        <td onClick={(_) => doCopy(link.shortUrl)}>{ link.shortId }</td>
-				                        <td className={link.clicks ? 'font-bold' : ''}>{ link.clicks }</td>
-                                        <td><ModalTrigger shortId={link.shortId} /></td>
+				                        <td 
+                                            className={`${link.expiresAt && hasExpired(link.expiresAt) ? 'line-through' : ''}`} 
+                                            onClick={(_) => link.expiresAt && hasExpired(link.expiresAt) ? {} : doCopy(link.shortUrl)}
+                                        >
+                                            { link.shortId }
+                                        </td>
+				                        <td className={link.clicks || (link.expiresAt && hasExpired(link.expiresAt)) ? 'font-bold' : ''}>{ link.clicks }</td>
+                                        <td>
+                                            <ModalDeleteTrigger shortId={link.shortId} callback={actionResultCallback} />
+                                        </td>
 			                        </tr>
                                 )) : null
                             }
@@ -89,7 +106,7 @@ export default function LinkTable () {
                 )
             }
             <Pagination curPage={cursor} nextPage={setCursor} total={total} limit={QUERY_LIMIT} />
-            <ConfirmModal title="Are you sure?" content="You are about to delete this link" />
+            <ConfirmModal title="Are you sure?" content="You are about to delete this short link" />
         </ModalProvider>
     );
 }

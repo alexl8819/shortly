@@ -15,6 +15,7 @@ const ShortenerContext = createContext<{
     fetchAllLinks: Function,
     updateLink: Function,
     removeLink: Function,
+    setExpiry: Function,
     hasNew: boolean,
     isLoading: boolean
 }>({
@@ -25,6 +26,7 @@ const ShortenerContext = createContext<{
     fetchAllLinks: () => {},
     updateLink: () => {},
     removeLink: () => {},
+    setExpiry: () => {},
     hasNew: false,
     isLoading: false
 });
@@ -67,31 +69,34 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
             }
             return totalRows;
         });
+
         setIsLoading(false);
     };
 
     const updateLink = async (shortId: string, newUrl: string) => {
         let linkPatchResponse;
 
-        const serializedBody = new URLSearchParams();
-        serializedBody.append('shortId', shortId);
-        serializedBody.append('new', newUrl);
+        const serializedBody = {
+            shortId,
+            newUrl,
+            field: 'url'
+        };
 
         try {
             linkPatchResponse = await fetch(`/api/link/${shortId}`, {
                 method: 'PATCH',
-                body: serializedBody
+                body: JSON.stringify(serializedBody)
             });
         } catch (err) {
             console.error(err);
-            return Object.freeze({ error: true });
+            return Object.freeze({ success: false });
         }
 
         if (!linkPatchResponse || !linkPatchResponse.ok) {
-            return Object.freeze({ error: true });
+            return Object.freeze({ success: false });
         }
 
-        return Object.freeze({});
+        return Object.freeze({ success: true });
     }
 
     const removeLink = (shortId: string) => {
@@ -103,24 +108,54 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
 
             try {
                 removeResponse = await fetch(`/api/link/${shortId}`, {
-                    method: 'delete'
+                    method: 'DELETE'
                 });
             } catch (err) {
                 console.error(err);
-                return null;
+                return Object.freeze({ success: false });
             }
 
             if (removeResponse && !removeResponse.ok) {
-                return null;
+                return Object.freeze({ success: false });
             }
 
             if (links.length <= 1) {
                 setCursor(cursor - 1);
-                return;
+                return Object.freeze({ success: true });
             }
 
             setLinks(links.filter((link) => link.shortId !== shortId));
+
+            return Object.freeze({ success: true });
         };
+    }
+
+    const setExpiry = (shortId: string, expiration: Date) => {
+        return async () => {
+            const serializedBody = {
+                shortId,
+                expiry: expiration.toString(),
+                field: 'expiry'
+            };
+            
+            let expiryResponse;
+
+            try {
+                expiryResponse = await fetch(`/api/link/${shortId}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify(serializedBody)
+                });
+            } catch (err) {
+                console.error(err);
+                return Object.freeze({ success: false });
+            }
+
+            if (!expiryResponse || !expiryResponse.ok) {
+                return Object.freeze({ success: false });
+            }
+    
+            return Object.freeze({ success: true });
+        }
     }
 
     return (
@@ -132,6 +167,7 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
             fetchAllLinks,
             updateLink,
             removeLink,
+            setExpiry,
             hasNew,
             isLoading
         }}>

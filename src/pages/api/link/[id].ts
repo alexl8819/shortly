@@ -1,12 +1,14 @@
 import type { APIRoute } from "astro";
 import camelcaseKeys from 'camelcase-keys';
-import { UAParser, type UAParserExt, type UAParserProps } from 'ua-parser-js';
+import { UAParser, type UAParserExt } from 'ua-parser-js';
 import { Crawlers, CLIs, Emails } from 'ua-parser-js/extensions';
 import { isBot, isAIBot } from 'ua-parser-js/helpers';
-import { supabaseClient } from "../../../lib/client";
 import decamelizeKeys from "decamelize-keys";
-import { VALID_URL } from "../../../lib/constants";
-import { type CorsOptions, withCors } from "../../../lib/common";
+import dayjs from "dayjs";
+
+import { supabaseClient } from "../../../lib/client";
+import { MINIMUM_MINUTE_DIFF, VALID_URL } from "../../../lib/constants";
+import { type CorsOptions, hasExpired, withCors } from "../../../lib/common";
 
 const IS_PROD = import.meta.env.PROD;
 const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
@@ -15,6 +17,8 @@ const CORS: CorsOptions = {
     preferredOrigin: IS_PROD ? CORS_DOMAIN : '*',
     supportedMethods: ['PATCH', 'DELETE', 'OPTIONS']
 };
+
+const VALID_PATCH_OPS = ['url', 'expiry'];
 
 export const DELETE: APIRoute = async ({ request, params }) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser();
@@ -44,33 +48,72 @@ export const PATCH: APIRoute = async ({ request }) => {
         return withCors(request, new Response('Unauthorized', { status: 401 }), CORS);
     }
 
-    const form = await request.formData();
-    const shortId = form.get('shortId')?.toString();
-    const newUrl = form.get('new')?.toString();
+    const submitted = await request.json();
+    const shortId = submitted.shortId;
 
-    if (!newUrl) {
-        return withCors(request, new Response(JSON.stringify({
-            error: 'Missing updated URL'
-        }), { status: 400 }), CORS);
-    } else if (!shortId) {
+    if (!shortId) {
         return withCors(request, new Response(JSON.stringify({
             error: 'Missing shortId'
         }), { status: 400 }), CORS);
     }
 
-    if (!VALID_URL.test(newUrl)) {
+    const field = submitted.field;
+
+    if (!field || (field && VALID_PATCH_OPS.indexOf(field) === -1)) {
         return withCors(request, new Response(JSON.stringify({
-            error: 'Invalid URL provided'
-        }), { status: 400 }), CORS);
+            error: 'Field must be provided'
+        })), CORS);
     }
+    
+    if (field === 'expiry') {
+        const expiry = submitted.expiry;
 
-    const { error } = await supabaseClient.from('Links').update(decamelizeKeys({
-        originalUrl: newUrl
-    })).eq('short_id', shortId).eq('user_id', userData.user.id);
+        if (!expiry) {
+            return withCors(request, new Response(JSON.stringify({
+                error: 'Missing expiration datetime'
+            }), { status: 400 }), CORS);
+        }
 
-    if (error) {
-        console.error(error);
-        return withCors(request, new Response(null, { status: 500 }), CORS);
+        const futureDate = dayjs(expiry);
+        const currentDate = dayjs();
+
+        if (futureDate.isBefore(currentDate, 'minute') || futureDate.diff(currentDate, 'minute') <= MINIMUM_MINUTE_DIFF) {
+            return withCors(request, new Response(JSON.stringify({
+                error: 'Invalid expiration date'
+            }), { status: 400 }), CORS);
+        }
+    
+        const { error } = await supabaseClient.from('Links').update(decamelizeKeys({
+            expiresAt: futureDate.toDate()
+        })).eq('short_id', shortId).eq('user_id', userData.user.id);
+    
+        if (error) {
+            console.error(error);
+            return withCors(request, new Response(null, { status: 500 }), CORS);
+        }
+    } else if (field === 'url') {
+        const newUrl = submitted.newUrl;
+        
+        if (!newUrl) {
+            return withCors(request, new Response(JSON.stringify({
+                error: 'Missing updated URL'
+            }), { status: 400 }), CORS);
+        }
+    
+        if (!VALID_URL.test(newUrl)) {
+            return withCors(request, new Response(JSON.stringify({
+                error: 'Invalid URL provided'
+            }), { status: 400 }), CORS);
+        }
+    
+        const { error } = await supabaseClient.from('Links').update(decamelizeKeys({
+            originalUrl: newUrl
+        })).eq('short_id', shortId).eq('user_id', userData.user.id);
+    
+        if (error) {
+            console.error(error);
+            return withCors(request, new Response(null, { status: 500 }), CORS);
+        }
     }
 
     return withCors(request, new Response(null, { status: 200 }), CORS);
@@ -83,8 +126,13 @@ const customCors: CorsOptions = {
 export const GET: APIRoute = async ({ request, params, redirect }) => {
     const { id: shortId } = params;
     const { headers } = request;
+
+    if (shortId === 'robots.txt') {
+        return withCors(request, new Response(null, { status: 401 }), customCors);
+    }
+
     // TODO: use cache
-    const { data, error } = await supabaseClient.from('Links').select('id,original_url').eq('short_id', shortId).limit(1);
+    const { data, error } = await supabaseClient.from('Links').select('id,original_url,expires_at').eq('short_id', shortId).limit(1);
 
     if (error) {
         return withCors(request, new Response(JSON.stringify({
@@ -96,7 +144,11 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
         return withCors(request, redirect('/404'), customCors);
     }
 
-    const row = camelcaseKeys(data[0]); 
+    const row = camelcaseKeys(data[0]);
+
+    if (row.expiresAt && hasExpired(row.expiresAt)) {
+        return withCors(request, redirect('/404'), customCors);
+    }
 
     const sourceAddress = headers.get('x-forwarded-for') || headers.get('cf-connecting-ip') || headers.get('x-real-ip');
     const userAgent = headers.get('user-agent');

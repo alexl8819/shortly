@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 interface CaptchaResult {
     success: boolean,
     'error-codes': Array<string>
@@ -65,4 +67,10 @@ export function withCors (req: Request, res: Response, options: CorsOptions) {
     }
 
     return r;
+}
+
+export function hasExpired (futureDate: string | Date) {
+    const now = dayjs();
+    const future = dayjs(futureDate);
+    return future.isBefore(now, 'minute') || future.isSame(now, 'minute');
 }

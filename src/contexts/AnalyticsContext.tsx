@@ -12,6 +12,8 @@ export interface AnalyticsDataPoint {
     shortId: string,
     originalUrl: string,
     createdAt?: Date,
+    expired: boolean,
+    expiresAt?: string | Date | null,
     referer?: string | null,
     geolocation?: {
         ipAddress: string,

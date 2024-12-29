@@ -11,3 +11,12 @@ export const CHART_OPTIONS = {
         }
     },
 };
+export const DATETIME_PICKER_OPTIONS = {
+    clickOpens: false,
+    position: 'auto center' as const,
+    mode: 'single' as const,
+    minuteIncrement: 1,
+    disableMobile: true,
+    inline: true
+}
+export const MINIMUM_MINUTE_DIFF = 5;
