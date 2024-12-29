@@ -95,7 +95,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
             setExpirationSet(hasSuccess);
             return;
         }
-        toast.error(`Failed to set expiration date for )${shortId})`);
+        toast.error(`Failed to set expiration date for (${shortId})`);
     }
     
     useEffect(() => {
