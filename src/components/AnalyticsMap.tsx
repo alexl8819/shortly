@@ -150,8 +150,9 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                                             This link expires
                                             <span className='ml-1 font-bold underline underline-offset-2'>
                                                 { 
-                                                    `${dayjs(analyticDataPoints[0].expiresAt).diff(dayjs(), 'year') >= 1 ? 
-                                                        'on ' + dayjs(analyticDataPoints[0].expiresAt).format('MM/DD/YYYY hh:MM A') : dayjs(analyticDataPoints[0].expiresAt).fromNow()}` 
+                                                    `${dayjs(analyticDataPoints[0].expiresAt).tz(Intl.DateTimeFormat().resolvedOptions().timeZone).diff(dayjs().tz(Intl.DateTimeFormat().resolvedOptions().timeZone), 'year') >= 1 ? 
+                                                        'on ' + dayjs(analyticDataPoints[0].expiresAt).tz(Intl.DateTimeFormat().resolvedOptions().timeZone).format('MM/DD/YYYY hh:MM A') : 
+                                                        dayjs(analyticDataPoints[0].expiresAt).tz(Intl.DateTimeFormat().resolvedOptions().timeZone).fromNow()}` 
                                                 }
                                             </span>
                                         </div>

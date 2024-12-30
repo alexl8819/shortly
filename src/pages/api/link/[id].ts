@@ -74,8 +74,8 @@ export const PATCH: APIRoute = async ({ request }) => {
             }), { status: 400 }), CORS);
         }
 
-        const futureDate = dayjs(expiry);
-        const currentDate = dayjs();
+        const futureDate = dayjs(expiry).utc();
+        const currentDate = dayjs().utc();
 
         if (futureDate.isAfter(currentDate, 'minute') && futureDate.diff(currentDate, 'minute') < MINIMUM_MINUTE_DIFF) {
             return withCors(request, new Response(JSON.stringify({

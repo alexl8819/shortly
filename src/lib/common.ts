@@ -70,7 +70,7 @@ export function withCors (req: Request, res: Response, options: CorsOptions) {
 }
 
 export function hasExpired (futureDate: string | Date) {
-    const now = dayjs();
-    const future = dayjs(futureDate);
+    const now = dayjs().utc();
+    const future = dayjs(futureDate).utc();
     return future.isBefore(now, 'minute') || future.isSame(now, 'minute');
 }
