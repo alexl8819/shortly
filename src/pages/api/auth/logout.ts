@@ -11,14 +11,19 @@ const CORS: CorsOptions = {
 };
 
 export const POST: APIRoute = async ({ request, cookies }) => {
-    if (!cookies.has('sb-access-token') || !cookies.has('sb-refresh-token')) {
+    const { error: userError } = await supabaseClient.auth.getUser();
+
+    if (userError) {
         return withCors(request, new Response(JSON.stringify({
-            error: 'Bad request'
-        }), { status: 400 }), CORS);
+            error: 'Unable to logout, try again later'
+        }), { status: 500 }), CORS);
     }
 
-    cookies.delete("sb-access-token", { path: "/" });
-    cookies.delete("sb-refresh-token", { path: "/" });
+    if (!cookies.has('sb-access-token') || !cookies.has('sb-refresh-token')) {
+        return withCors(request, new Response(JSON.stringify({
+            error: 'Missing cookies. Bad request'
+        }), { status: 400 }), CORS);
+    }
 
     const { error: signOutError } = await supabaseClient.auth.signOut();
 
@@ -27,6 +32,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             error: signOutError.message
         }), { status: 500 }), CORS);
     }
+
+    cookies.delete("sb-access-token", { path: "/" });
+    cookies.delete("sb-refresh-token", { path: "/" });
 
     return withCors(request, new Response(null, { status: 204 }), CORS);
 }
