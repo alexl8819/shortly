@@ -48,7 +48,7 @@ ChartJS.register(
     Legend
 );
 
-ChartJS.defaults.scale.grid.display = false;
+// ChartJS.defaults.scale.grid.display = false;
 
 dayjs.extend(utcPlugin.default);
 dayjs.extend(timezonePlugin.default);
@@ -92,7 +92,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
     const handleExpirationUpdate = async (shortId: string, hasSuccess: boolean) => {
         if (hasSuccess) {
             toast.success(`Successfully set expiration date for (${shortId})`);
-            setCursor(null);
+            setCursor(-1);
             await delay(500);
             setCursor(cursor);
             return;
@@ -101,7 +101,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
     }
     
     useEffect(() => {
-        if (!id) {
+        if (!id || cursor <= -1) {
             return;
         }
         
