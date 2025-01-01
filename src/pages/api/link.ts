@@ -93,9 +93,9 @@ export const POST: APIRoute = async ({ request }) => {
         return withCors(request, new Response('Unauthorized', { status: 401 }), CORS);
     }
 
-    const form = await request.formData();
+    const submitted = await request.json();
 
-    const originalUrl = form.get('originalUrl')?.toString();
+    const originalUrl = submitted.originalUrl;
 
     if (!originalUrl) {
         return withCors(request, new Response(JSON.stringify({

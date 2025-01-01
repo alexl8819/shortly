@@ -168,15 +168,14 @@ ShortenedLinkPreview.propTypes = {
 };
 
 async function createShortUrl (originalUrl: string) {
-    const serializedBody = new URLSearchParams();
-    serializedBody.append('originalUrl', originalUrl);
-
     let shortUrlResponse;
 
     try {
         shortUrlResponse = await fetch('/api/link', {
             method: 'POST',
-            body: serializedBody
+            body: JSON.stringify({
+                originalUrl
+            })
         });
     } catch (err) {
         console.error(err);
