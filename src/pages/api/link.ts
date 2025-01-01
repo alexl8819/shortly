@@ -6,6 +6,7 @@ import camelcaseKeys from "camelcase-keys";
 import { supabaseClient } from "../../lib/client";
 import { type CorsOptions, withCors } from "../../lib/common";
 import { QUERY_LIMIT, VALID_URL } from "../../lib/constants";
+import { sanitize } from "../../lib/common";
 
 const IS_PROD = import.meta.env.PROD;
 const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
@@ -95,7 +96,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     const submitted = await request.json();
 
-    const originalUrl = submitted.originalUrl;
+    const originalUrl = sanitize(submitted.originalUrl);
 
     if (!originalUrl) {
         return withCors(request, new Response(JSON.stringify({

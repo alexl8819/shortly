@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 
 import { supabaseClient } from "../../../lib/client";
 import { MINIMUM_MINUTE_DIFF, VALID_URL } from "../../../lib/constants";
-import { type CorsOptions, hasExpired, withCors } from "../../../lib/common";
+import { type CorsOptions, hasExpired, withCors, sanitize } from "../../../lib/common";
 
 const IS_PROD = import.meta.env.PROD;
 const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
@@ -49,7 +49,7 @@ export const PATCH: APIRoute = async ({ request }) => {
     }
 
     const submitted = await request.json();
-    const shortId = submitted.shortId;
+    const shortId = sanitize(submitted.shortId);
 
     if (!shortId) {
         return withCors(request, new Response(JSON.stringify({
@@ -57,7 +57,7 @@ export const PATCH: APIRoute = async ({ request }) => {
         }), { status: 400 }), CORS);
     }
 
-    const field = submitted.field;
+    const field = sanitize(submitted.field);
 
     if (!field || (field && VALID_PATCH_OPS.indexOf(field) === -1)) {
         return withCors(request, new Response(JSON.stringify({
@@ -66,7 +66,7 @@ export const PATCH: APIRoute = async ({ request }) => {
     }
     
     if (field === 'expiry') {
-        const expiry = submitted.expiry;
+        const expiry = sanitize(submitted.expiry);
 
         if (!expiry) {
             return withCors(request, new Response(JSON.stringify({
@@ -92,7 +92,7 @@ export const PATCH: APIRoute = async ({ request }) => {
             return withCors(request, new Response(null, { status: 500 }), CORS);
         }
     } else if (field === 'url') {
-        const newUrl = submitted.newUrl;
+        const newUrl = sanitize(submitted.newUrl);
         
         if (!newUrl) {
             return withCors(request, new Response(JSON.stringify({

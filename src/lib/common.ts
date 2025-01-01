@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import xss from 'xss';
 
 interface CaptchaResult {
     success: boolean,
@@ -73,4 +74,8 @@ export function hasExpired (futureDate: string | Date) {
     const now = dayjs().utc();
     const future = dayjs(futureDate).utc();
     return future.isBefore(now, 'minute') || future.isSame(now, 'minute');
+}
+
+export function sanitize (str: string) {
+    return xss(str);
 }
