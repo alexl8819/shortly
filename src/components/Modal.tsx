@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, type FC } from 'react';
 import { Button } from 'react-aria-components';
 import Flatpickr from 'react-flatpickr';
+import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
 
 import { useShortener } from '../contexts/ShortenerContext';
 import { useModal } from '../contexts/ModalContext';
-import { DATETIME_PICKER_OPTIONS, MINIMUM_DATETIME, MINIMUM_MINUTE_DIFF } from '../lib/constants';
+import { DATETIME_PICKER_OPTIONS, MINIMUM_DATETIME } from '../lib/constants';
 
 import 'flatpickr/dist/themes/material_blue.css';
 
@@ -61,7 +62,7 @@ export const ChooseDateModal: FC<ChooseDateModalProps> = ({ title, date }) => {
     const handleDatetimeChange = (_: Array<Date>, dateStr: string) => {
         setReady(true);
 
-        setExecuteFn(() => setExpiry(selectedItem, dateStr));
+        setExecuteFn(() => setExpiry(selectedItem, dayjs(dateStr).tz(Intl.DateTimeFormat().resolvedOptions().timeZone).toISOString()));
     };
 
     const handleCancel = () => {

@@ -76,16 +76,14 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
     const updateLink = async (shortId: string, newUrl: string) => {
         let linkPatchResponse;
 
-        const serializedBody = {
-            shortId,
-            newUrl,
-            field: 'url'
-        };
-
         try {
             linkPatchResponse = await fetch(`/api/link/${shortId}`, {
                 method: 'PATCH',
-                body: JSON.stringify(serializedBody)
+                body: JSON.stringify({
+                    shortId,
+                    newUrl,
+                    field: 'url'
+                })
             });
         } catch (err) {
             console.error(err);
@@ -130,20 +128,18 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
         };
     }
 
-    const setExpiry = (shortId: string, expiration: Date) => {
+    const setExpiry = (shortId: string, expiry: string) => {
         return async () => {
-            const serializedBody = {
-                shortId,
-                expiry: expiration.toString(),
-                field: 'expiry'
-            };
-            
             let expiryResponse;
 
             try {
                 expiryResponse = await fetch(`/api/link/${shortId}`, {
                     method: 'PATCH',
-                    body: JSON.stringify(serializedBody)
+                    body: JSON.stringify({
+                        shortId,
+                        expiry,
+                        field: 'expiry'
+                    })
                 });
             } catch (err) {
                 console.error(err);

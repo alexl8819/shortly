@@ -74,10 +74,8 @@ export const PATCH: APIRoute = async ({ request }) => {
             }), { status: 400 }), CORS);
         }
 
-        const futureDate = dayjs(expiry).tz(Intl.DateTimeFormat().resolvedOptions().timeZone);
-        const currentDate = dayjs().tz(Intl.DateTimeFormat().resolvedOptions().timeZone);
-
-        console.log(`diff: ${futureDate.diff(currentDate, 'minute')}`);
+        const futureDate = dayjs(expiry);
+        const currentDate = dayjs();
 
         if (futureDate.isAfter(currentDate, 'minute') && futureDate.diff(currentDate, 'minute') < MINIMUM_MINUTE_DIFF) {
             return withCors(request, new Response(JSON.stringify({
@@ -86,7 +84,7 @@ export const PATCH: APIRoute = async ({ request }) => {
         }
     
         const { error } = await supabaseClient.from('Links').update(decamelizeKeys({
-            expiresAt: futureDate.toDate()
+            expiresAt: expiry
         })).eq('short_id', shortId).eq('user_id', userData.user.id);
     
         if (error) {
