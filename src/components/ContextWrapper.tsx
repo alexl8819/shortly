@@ -7,7 +7,7 @@ import { AnalyticsProvider } from '../contexts/AnalyticsContext';
 import AnalyticsMap from './AnalyticsMap';
 import type { FC } from 'react';
 
-export function ShortenerViewContextWrapper () {
+export function DashboardViewContextWrapper () {
     return (
         <ShortenerProvider>
             <section className="my-6">
@@ -19,6 +19,18 @@ export function ShortenerViewContextWrapper () {
             <ToastContainer autoClose={3000} transition={Zoom} />
 		</ShortenerProvider>
     );
+}
+
+interface ShortenerPreviewContextWrapperProps {
+    isLoggedIn: boolean
+}
+
+export const ShortenerPreviewContextWrapper: FC<ShortenerPreviewContextWrapperProps> = ({ isLoggedIn }) => {
+    return (
+        <ShortenerProvider>
+            <ShortenerWidget isLoggedIn={isLoggedIn} />
+        </ShortenerProvider>
+    )
 }
 
 interface AnalyticsContextWrapperProps {

@@ -6,6 +6,7 @@ import {
 } from 'react';
 
 import { QUERY_LIMIT } from '../lib/constants';
+import { sanitize } from '../lib/common';
 
 const ShortenerContext = createContext<{
     links: Array<any> | null,
@@ -13,6 +14,7 @@ const ShortenerContext = createContext<{
     cursor: number,
     setCursor: Function,
     fetchAllLinks: Function,
+    createLink: Function,
     updateLink: Function,
     removeLink: Function,
     setExpiry: Function,
@@ -24,6 +26,7 @@ const ShortenerContext = createContext<{
     cursor: 0,
     setCursor: () => {},
     fetchAllLinks: () => {},
+    createLink: () => {},
     updateLink: () => {},
     removeLink: () => {},
     setExpiry: () => {},
@@ -81,7 +84,7 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
                 method: 'PATCH',
                 body: JSON.stringify({
                     shortId,
-                    newUrl,
+                    newUrl: sanitize(newUrl),
                     field: 'url'
                 })
             });
@@ -128,6 +131,30 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
         };
     }
 
+    const createLink = async (originalUrl: string) => {
+        let shortUrlResponse;
+    
+        try {
+            shortUrlResponse = await fetch('/api/link', {
+                method: 'POST',
+                body: JSON.stringify({
+                    originalUrl: sanitize(originalUrl)
+                })
+            });
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    
+        if (!shortUrlResponse.ok) {
+            console.error(shortUrlResponse.status);
+            return null;
+        }
+    
+        const shortUrlData = await shortUrlResponse.json();
+        return shortUrlData['url'];
+    }
+
     const setExpiry = (shortId: string, expiry: string) => {
         return async () => {
             let expiryResponse;
@@ -137,7 +164,7 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
                     method: 'PATCH',
                     body: JSON.stringify({
                         shortId,
-                        expiry,
+                        expiry: sanitize(expiry),
                         field: 'expiry'
                     })
                 });
@@ -161,6 +188,7 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
             cursor,
             setCursor,
             fetchAllLinks,
+            createLink,
             updateLink,
             removeLink,
             setExpiry,

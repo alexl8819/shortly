@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header';
 import Footer from '../components/Footer.astro';
-import { ShortenerViewContextWrapper } from '../components/ContextWrapper';
+import { DashboardViewContextWrapper } from '../components/ContextWrapper';
 
 import { supabaseClient } from '../lib/client';
 
@@ -55,7 +55,7 @@ const email = session.data.user?.email;
 	]} isLoggedIn={isLoggedIn}} />
 	<main class="lg:px-[7.375rem] xl:px-[10.375rem] px-6 py-12 lg:mt-6">
 		<h1 class="text-left text-lg">Welcome back <span class="font-bold">{ email }</span></h1>
-		<ShortenerViewContextWrapper client:load />
+		<DashboardViewContextWrapper client:load />
 	</main>
 	<Footer directory={[
 		{ 

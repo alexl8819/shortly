@@ -14,7 +14,6 @@ import { useEffect, useState, type FormEvent, type FC } from 'react';
 
 import { useShortener } from '../contexts/ShortenerContext';
 import { QUERY_LIMIT, VALID_URL } from '../lib/constants';
-import { WidgetSkeleton } from './Skeleton';
 
 interface ShortenedUrl {
     original: string,
@@ -34,6 +33,7 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
         total, 
         cursor, 
         setCursor,
+        createLink,
         isLoading
     } = useShortener();
 
@@ -53,7 +53,7 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
             return;
         }
 
-        const shortened = await createShortUrl(longUrlInput);
+        const shortened = await createLink(longUrlInput);
 
         if (!shortened) {
             throw new Error('Failed to create shortened url');
@@ -99,7 +99,7 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
                         value={longUrlInput}
                         placeholder='Shorten a link here...'
                         onChange={({ target }) => setLongUrlInput(target.value)}
-                        disabled={isLoading}
+                        disabled={_window !== null && (_window?.location.pathname.slice(1) === 'dashboard') && isLoading}
                     />
                     <FieldError className='mt-[0.25rem] font-medium text-[0.75rem] tracking-[0.005em] leading-[1.125rem] text-red italic'>
                         {
@@ -110,7 +110,7 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
                 <Button 
                     type='submit' 
                     className='lg:mt-0 mt-4 lg:ml-6 lg:py-0 py-3 lg:px-12 px-6 rounded-lg hover:bg-light-cyan bg-cyan text-white lg:w-auto w-full lg:max-h-[3.15rem] text-center cursor-pointer disabled:bg-gray disabled:cursor-not-allowed'
-                    isDisabled={isLoading}
+                    isDisabled={_window !== null && (_window?.location.pathname.slice(1) === 'dashboard') && isLoading}
                 >
                     Shorten
                 </Button>
@@ -166,27 +166,3 @@ const ShortenedLinkPreview: FC<ShortenedLinkPreviewProps> = ({ shorten }) => {
 ShortenedLinkPreview.propTypes = {
     shorten: PropTypes.any.isRequired
 };
-
-async function createShortUrl (originalUrl: string) {
-    let shortUrlResponse;
-
-    try {
-        shortUrlResponse = await fetch('/api/link', {
-            method: 'POST',
-            body: JSON.stringify({
-                originalUrl
-            })
-        });
-    } catch (err) {
-        console.error(err);
-        return null;
-    }
-
-    if (!shortUrlResponse.ok) {
-        console.error(shortUrlResponse.status);
-        return null;
-    }
-
-    const shortUrlData = await shortUrlResponse.json();
-    return shortUrlData['url'];
-}

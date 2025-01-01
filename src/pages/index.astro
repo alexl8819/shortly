@@ -5,7 +5,7 @@ import { Link } from 'react-aria-components';
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header';
 import Footer from '../components/Footer.astro';
-import ShortenerWidget from '../components/Shortener';
+import { ShortenerPreviewContextWrapper } from '../components/ContextWrapper';
 import CardContainer from '../components/CardContainer.astro';
 import { supabaseClient } from '../lib/client';
 
@@ -64,7 +64,7 @@ if (isLoggedIn) {
 			</div>
 		</section>
 		<section class="mt-[5.5rem]">
-			<ShortenerWidget isLoggedIn={isLoggedIn} client:load />
+			<ShortenerPreviewContextWrapper isLoggedIn={isLoggedIn} client:load />
 		</section>
 		<section class="mt-20 text-center">
 			<div>
