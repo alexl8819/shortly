@@ -4,8 +4,8 @@ import decamelizeKeys from 'decamelize-keys';
 import camelcaseKeys from "camelcase-keys";
 
 import { supabaseClient } from "../../lib/client";
-import { type CorsOptions, withCors } from "../../lib/common";
-import { QUERY_LIMIT, VALID_URL } from "../../lib/constants";
+import { type CorsOptions, isURLActive, withCors } from "../../lib/common";
+import { GENERIC_ERROR_MESSAGE, QUERY_LIMIT, VALID_URL } from "../../lib/constants";
 import { sanitize } from "../../lib/common";
 
 const IS_PROD = import.meta.env.PROD;
@@ -16,7 +16,6 @@ const CORS: CorsOptions = {
     supportedMethods: ['GET', 'POST', 'OPTIONS']
 };
 
-// TODO: cache non-volatile results
 export const GET: APIRoute = async ({ request }) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser();
 
@@ -45,7 +44,9 @@ export const GET: APIRoute = async ({ request }) => {
     
     if (error) {
         console.error(error);
-        return withCors(request, new Response(null, { status: 500 }), CORS);
+        return withCors(request, new Response(JSON.stringify({
+            error: GENERIC_ERROR_MESSAGE
+        }), { status: 500 }), CORS);
     }
 
     let rows: Array<any> = [];
@@ -74,7 +75,9 @@ export const GET: APIRoute = async ({ request }) => {
     
         if (error) {
             console.error(error);
-            return withCors(request, new Response(null, { status: 500 }), CORS);
+            return withCors(request, new Response(JSON.stringify({
+                error: GENERIC_ERROR_MESSAGE
+            }), { status: 500 }), CORS);
         }
 
         const clicksMap = new Map(analyticsFound.map((r: any) => [r.linkid, r.clicks]));
@@ -100,28 +103,53 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (!originalUrl) {
         return withCors(request, new Response(JSON.stringify({
-            error: 'Missing url'
+            error: 'URL is missing'
         }), { status: 400 }), CORS);
     }
 
     if (!VALID_URL.test(originalUrl)) {
         return withCors(request, new Response(JSON.stringify({
-            error: 'originalUrl is not a valid URL'
+            error: 'URL is not a valid URL'
+        }), { status: 400 }), CORS);
+    }
+
+    const urlStatus = await isURLActive(originalUrl);
+
+    if (!urlStatus) {
+        return withCors(request, new Response(JSON.stringify({
+            error: 'URL is inactive or dead'
+        }), { status: 400 }), CORS);
+    }
+
+    const { count, error: countErr } = await supabaseClient.from('Links').select('id', { 
+        count: 'exact', head: true 
+    }).eq('original_url', originalUrl).eq('user_id', data.user.id);
+
+    if (countErr) {
+        console.error(countErr);
+        return withCors(request, new Response(JSON.stringify({
+            error: GENERIC_ERROR_MESSAGE
+        }), { status: 500 }), CORS);
+    }
+
+    if (count && count > 0) {
+        return withCors(request, new Response(JSON.stringify({
+            error: 'URL already exists'
         }), { status: 400 }), CORS);
     }
 
     const shortId = nanoid(6);
-    const insertBody = {
+
+    const { error: sqlCreateError } = await supabaseClient.from('Links').insert(decamelizeKeys({
         originalUrl,
         shortId,
         userId: data.user.id
-    };
+    }));
 
-    const { error: sqlError } = await supabaseClient.from('Links').insert(decamelizeKeys(insertBody));
-
-    if (sqlError) {
+    if (sqlCreateError) {
+        console.error(sqlCreateError);
         return withCors(request, new Response(JSON.stringify({
-            error: sqlError.message
+            error: GENERIC_ERROR_MESSAGE
         }), { status: 500 }), CORS);
     }
 

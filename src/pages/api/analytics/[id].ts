@@ -3,6 +3,7 @@ import camelcaseKeys from "camelcase-keys";
 import dayjs from 'dayjs';
 import { supabaseClient } from "../../../lib/client";
 import { type CorsOptions, hasExpired, withCors } from "../../../lib/common";
+import { GENERIC_ERROR_MESSAGE } from "../../../lib/constants";
 
 const IS_PROD = import.meta.env.PROD;
 const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
@@ -66,7 +67,9 @@ export const GET: APIRoute = async ({ request, params }) => {
 
     if (error) {
         console.error(error);
-        return withCors(request, new Response(null, { status: 500 }), CORS);
+        return withCors(request, new Response(JSON.stringify({
+            error: GENERIC_ERROR_MESSAGE
+        }), { status: 500 }), CORS);
     }
 
     // If no analytics are found, display the short id, original_url and expires_at fields at minimum
@@ -75,7 +78,9 @@ export const GET: APIRoute = async ({ request, params }) => {
         
         if (error) {
             console.error(error);
-            return withCors(request, new Response(null, { status: 500 }), CORS);
+            return withCors(request, new Response(JSON.stringify({
+                error: GENERIC_ERROR_MESSAGE
+            }), { status: 500 }), CORS);
         }
 
         const rows = camelcaseKeys(data).map((row) => {
@@ -91,8 +96,6 @@ export const GET: APIRoute = async ({ request, params }) => {
             rows
         }), { status: 200 }), CORS);
     }
-
-    const { count: total } = await supabaseClient.from('Analytics').select('*', { count: 'exact', head: true }).eq('link', params.id);
 
     const modifiedRows = data.map((dp: any) => {
         const { Links, ...otherKeys } = dp;
@@ -111,6 +114,15 @@ export const GET: APIRoute = async ({ request, params }) => {
             Devices: camelcaseKeys(dp.Devices)
         })); 
     });
+
+    const { count: total, error: countErr } = await supabaseClient.from('Analytics').select('*', { count: 'exact', head: true }).eq('link', params.id);
+
+    if (countErr) {
+        console.error(countErr);
+        return withCors(request, new Response(JSON.stringify({
+            error: GENERIC_ERROR_MESSAGE
+        }), { status: 500 }), CORS);
+    }
 
     return withCors(request, new Response(JSON.stringify({
         total,

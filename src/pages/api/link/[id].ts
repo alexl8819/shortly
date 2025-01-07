@@ -7,8 +7,8 @@ import decamelizeKeys from "decamelize-keys";
 import dayjs from "dayjs";
 
 import { supabaseClient } from "../../../lib/client";
-import { MINIMUM_MINUTE_DIFF, VALID_URL } from "../../../lib/constants";
-import { type CorsOptions, hasExpired, withCors, sanitize } from "../../../lib/common";
+import { GENERIC_ERROR_MESSAGE, MINIMUM_MINUTE_DIFF, VALID_URL } from "../../../lib/constants";
+import { type CorsOptions, hasExpired, withCors, sanitize, isURLActive } from "../../../lib/common";
 
 const IS_PROD = import.meta.env.PROD;
 const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
@@ -34,7 +34,7 @@ export const DELETE: APIRoute = async ({ request, params }) => {
     if (delError) {
         console.error(delError);
         return withCors(request, new Response(JSON.stringify({
-            error: 'Failed to delete link'
+            error: GENERIC_ERROR_MESSAGE
         }), { status: 500 }), CORS);
     }
 
@@ -89,7 +89,9 @@ export const PATCH: APIRoute = async ({ request }) => {
     
         if (error) {
             console.error(error);
-            return withCors(request, new Response(null, { status: 500 }), CORS);
+            return withCors(request, new Response(JSON.stringify({
+                error: GENERIC_ERROR_MESSAGE
+            }), { status: 500 }), CORS);
         }
     } else if (field === 'url') {
         const newUrl = sanitize(submitted.newUrl);
@@ -105,6 +107,14 @@ export const PATCH: APIRoute = async ({ request }) => {
                 error: 'Invalid URL provided'
             }), { status: 400 }), CORS);
         }
+
+        const urlStatus = await isURLActive(submitted.newUrl);
+
+        if (!urlStatus) {
+            return withCors(request, new Response(JSON.stringify({
+                error: 'URL is dead or inactive'
+            }), { status: 400 }), CORS);
+        }
     
         const { error } = await supabaseClient.from('Links').update(decamelizeKeys({
             originalUrl: newUrl
@@ -112,7 +122,9 @@ export const PATCH: APIRoute = async ({ request }) => {
     
         if (error) {
             console.error(error);
-            return withCors(request, new Response(null, { status: 500 }), CORS);
+            return withCors(request, new Response(JSON.stringify({
+                error: GENERIC_ERROR_MESSAGE
+            }), { status: 500 }), CORS);
         }
     }
 
@@ -135,8 +147,9 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
     const { data, error } = await supabaseClient.from('Links').select('id,original_url,expires_at').eq('short_id', shortId).limit(1);
 
     if (error) {
+        console.error(error);
         return withCors(request, new Response(JSON.stringify({
-            error: error.message
+            error: GENERIC_ERROR_MESSAGE
         }), { status: 500 }), customCors);
     }
 
@@ -159,13 +172,13 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
         
         if (error) {
             console.error(error);
-            return withCors(request, new Response(null, {
-                status: 500
-            }), customCors);
+            return withCors(request, new Response(JSON.stringify({
+                error: GENERIC_ERROR_MESSAGE
+            }), { status: 500 }), customCors);
         }
 
-        // TODO: should probably be cron job?
         // WARNING: Possible race condition
+        // TODO: move to cron job
         // If no entry exists for this ip address, add its initial data
         if (!data || !data.length) {
             const metadata = await getAddressMetadata(sourceAddress);
@@ -181,9 +194,9 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
 
                 if (geoError) {
                     console.error(geoError);
-                    return withCors(request, new Response(null, {
-                        status: 500
-                    }), customCors);
+                    return withCors(request, new Response(JSON.stringify({
+                        error: GENERIC_ERROR_MESSAGE
+                    }), { status: 500 }), customCors);
                 }
             }
         }
@@ -194,7 +207,9 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
         
         if (devicesError) {
             console.error(devicesError);
-            return withCors(request, new Response(null, { status: 500 }), customCors);
+            return withCors(request, new Response(JSON.stringify({
+                error: GENERIC_ERROR_MESSAGE
+            }), { status: 500 }), customCors);
         }
 
         if (!data || !data.length) {
@@ -219,9 +234,9 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
 
             if (userAgentError) {
                 console.error(userAgentError);
-                return withCors(request, new Response(null, {
-                    status: 500
-                }), customCors);
+                return withCors(request, new Response(JSON.stringify({
+                    error: GENERIC_ERROR_MESSAGE
+                }), { status: 500 }), customCors);
             }
         }
     }
@@ -249,9 +264,9 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
 
     if (analyicsError) {
         console.error(analyicsError);
-        return withCors(request, new Response(null, {
-            status: 500
-        }), customCors);
+        return withCors(request, new Response(JSON.stringify({
+            error: GENERIC_ERROR_MESSAGE
+        }), { status: 500 }), customCors);
     }
 
     return withCors(request, redirect(row.originalUrl), customCors);
