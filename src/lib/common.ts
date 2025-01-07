@@ -79,3 +79,18 @@ export function hasExpired (futureDate: string | Date) {
 export function sanitize (str: string) {
     return xss(str);
 }
+
+export async function isURLActive (url: string) {
+    let urlCheckResponse;
+
+    try {
+        urlCheckResponse = await fetch(url, {
+            signal: AbortSignal.timeout(3000)
+        });
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+
+    return urlCheckResponse.ok || urlCheckResponse.redirected;
+}
