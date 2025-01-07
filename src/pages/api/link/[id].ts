@@ -7,7 +7,7 @@ import decamelizeKeys from "decamelize-keys";
 import dayjs from "dayjs";
 
 import { supabaseClient } from "../../../lib/client";
-import { GENERIC_ERROR_MESSAGE, MINIMUM_MINUTE_DIFF, VALID_URL } from "../../../lib/constants";
+import { CLIENT_IP_HEADERS, GENERIC_ERROR_MESSAGE, MINIMUM_MINUTE_DIFF, VALID_URL } from "../../../lib/constants";
 import { type CorsOptions, hasExpired, withCors, sanitize, isURLActive } from "../../../lib/common";
 
 const IS_PROD = import.meta.env.PROD;
@@ -115,6 +115,23 @@ export const PATCH: APIRoute = async ({ request }) => {
                 error: 'URL is dead or inactive'
             }), { status: 400 }), CORS);
         }
+
+        const { data: expiryData, error: expiryError } = await supabaseClient.from('Links').select('expires_at')
+            .eq('short_id', shortId).eq('user_id', userData.user.id);
+
+        if (expiryError) {
+            return withCors(request, new Response(JSON.stringify({
+                error: GENERIC_ERROR_MESSAGE
+            }), { status: 500 }), CORS);
+        }
+
+        const row = camelcaseKeys(expiryData[0]);
+
+        if (row.expiresAt !== null && hasExpired(row.expiresAt)) {
+            return withCors(request, new Response(JSON.stringify({
+                error: 'URL cannot be updated, link has expired'
+            }), { status: 403 }), CORS);
+        }
     
         const { error } = await supabaseClient.from('Links').update(decamelizeKeys({
             originalUrl: newUrl
@@ -163,81 +180,90 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
         return withCors(request, redirect('/404'), customCors);
     }
 
-    const sourceAddress = headers.get('x-forwarded-for') || headers.get('cf-connecting-ip') || headers.get('x-real-ip');
-    const userAgent = headers.get('user-agent');
-    const referer = headers.get('referer');
+    const sourceAddress = CLIENT_IP_HEADERS(headers);
 
-    if (sourceAddress) {
-        const { data, error } = await supabaseClient.from('Geolocation').select('id').eq('ip_address', sourceAddress);
+    if (!sourceAddress) {
+        return withCors(request, new Response(JSON.stringify({
+            error: GENERIC_ERROR_MESSAGE
+        }), { status: 500 }), customCors);
+    }
+    
+    const { data: sourceAddressData, error: sourceAddressError } = await supabaseClient.from('Geolocation').select('id').eq('ip_address', sourceAddress);
         
-        if (error) {
-            console.error(error);
-            return withCors(request, new Response(JSON.stringify({
-                error: GENERIC_ERROR_MESSAGE
-            }), { status: 500 }), customCors);
-        }
-
-        // WARNING: Possible race condition
-        // TODO: move to cron job
-        // If no entry exists for this ip address, add its initial data
-        if (!data || !data.length) {
-            const metadata = await getAddressMetadata(sourceAddress);
-
-            if (metadata) {
-                const { error: geoError } =  await supabaseClient.from('Geolocation').insert(decamelizeKeys({
-                    country: metadata.location.originCountry,
-                    state: metadata.location.originState || null,
-                    city: metadata.location.originCity || null,
-                    fingerprint: metadata.confidence >= 0.5 ? metadata.fingerprint : null,
-                    ipAddress: sourceAddress
-                }));
-
-                if (geoError) {
-                    console.error(geoError);
-                    return withCors(request, new Response(JSON.stringify({
-                        error: GENERIC_ERROR_MESSAGE
-                    }), { status: 500 }), customCors);
-                }
-            }
-        }
+    if (sourceAddressError) {
+        console.error(sourceAddressError);
+        return withCors(request, new Response(JSON.stringify({
+            error: GENERIC_ERROR_MESSAGE
+        }), { status: 500 }), customCors);
     }
 
-    if (userAgent) {
-        const { data, error: devicesError } = await supabaseClient.from('Devices').select('id').eq('user_agent', userAgent);
-        
-        if (devicesError) {
-            console.error(devicesError);
-            return withCors(request, new Response(JSON.stringify({
-                error: GENERIC_ERROR_MESSAGE
-            }), { status: 500 }), customCors);
-        }
+    // WARNING: Possible race condition
+    // TODO: move to cron job
+    if (!sourceAddressData || !sourceAddressData.length) {
+        const metadata = await getAddressMetadata(sourceAddress);
 
-        if (!data || !data.length) {
-            const result = await UAParser(userAgent, [CLIs, Emails, Crawlers] as UAParserExt).withFeatureCheck();
-        
-            const isBotLike = isAIBot(result) || isBot(result);
-
-            const { type: browserType, name, version } = result.browser;
-            const { type: deviceType, vendor, model } = result.device;
-
-            const usedType = deviceType || name;
-
-            const { error: userAgentError } = await supabaseClient.from('Devices').insert(decamelizeKeys({
-                userAgent,
-                isAutomated: isBotLike,
-                type: usedType,
-                interface: browserType,
-                model,
-                vendor,
-                version
+        if (metadata) {
+            const { error: geoError } =  await supabaseClient.from('Geolocation').insert(decamelizeKeys({
+                country: metadata.location.originCountry,
+                state: metadata.location.originState || null,
+                city: metadata.location.originCity || null,
+                fingerprint: metadata.confidence >= 0.5 ? metadata.fingerprint : null,
+                ipAddress: sourceAddress
             }));
 
-            if (userAgentError) {
-                console.error(userAgentError);
+            if (geoError) {
+                console.error(geoError);
                 return withCors(request, new Response(JSON.stringify({
                     error: GENERIC_ERROR_MESSAGE
                 }), { status: 500 }), customCors);
             }
+        }
+    }
+
+    const userAgent = headers.get('user-agent');
+
+    if (!userAgent) {
+        return withCors(request, new Response(JSON.stringify({
+            error: GENERIC_ERROR_MESSAGE
+        }), { status: 500 }), customCors);
+    }
+    
+    const { data: devicesData, error: devicesError } = await supabaseClient.from('Devices').select('id').eq('user_agent', userAgent);
+        
+    if (devicesError) {
+        console.error(devicesError);
+        return withCors(request, new Response(JSON.stringify({
+            error: GENERIC_ERROR_MESSAGE
+        }), { status: 500 }), customCors);
+    }
+
+    // WARNING: Possible race condition
+    // TODO: move to cron job
+    if (!devicesData || !devicesData.length) {
+        const result = await UAParser(userAgent, [CLIs, Emails, Crawlers] as UAParserExt).withFeatureCheck();
+        
+        const isBotLike = isAIBot(result) || isBot(result);
+
+        const { type: browserType, name, version } = result.browser;
+        const { type: deviceType, vendor, model } = result.device;
+
+        const usedType = deviceType || name;
+
+        const { error: userAgentError } = await supabaseClient.from('Devices').insert(decamelizeKeys({
+            userAgent,
+            isAutomated: isBotLike,
+            type: usedType,
+            interface: browserType,
+            model,
+            vendor,
+            version
+        }));
+
+        if (userAgentError) {
+            console.error(userAgentError);
+            return withCors(request, new Response(JSON.stringify({
+                error: GENERIC_ERROR_MESSAGE
+            }), { status: 500 }), customCors);
         }
     }
 
@@ -249,6 +275,8 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
     const utmCampaign = urlParams.get('utm_campaign')?.toString();
     const utmTerm = urlParams.get('utm_term')?.toString();
     const utmContent = urlParams.get('utm_content')?.toString();
+
+    const referer = headers.get('referer') || headers.get('referrer');
 
     const { error: analyicsError } = await supabaseClient.from('Analytics').insert(decamelizeKeys({
         link: row.id,
