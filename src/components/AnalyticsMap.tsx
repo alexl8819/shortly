@@ -212,9 +212,13 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                             </div>) : isEditMode && analyticDataPoints ? (<LinkEditor url={originalUrl} shortId={analyticDataPoints[0].shortId} onFinish={handleUrlUpdate} />) : (
                             <div className='flex flex-row items-center space-x-2'>
                                 <Link className='text-sm font-bold underline underline-offset-2' href={originalUrl} target='_blank'>{ originalUrl }</Link>
-                                <Button onPress={() => setEditMode(true)} className='lg:ml-3 ml-1'>
-                                    <FontAwesomeIcon icon={faPenToSquare} size='1x' />
-                                </Button>
+                                {
+                                    analyticDataPoints && !analyticDataPoints[0].expired ? (
+                                        <Button onPress={() => setEditMode(true)} className='lg:ml-3 ml-1'>
+                                            <FontAwesomeIcon icon={faPenToSquare} size='1x' />
+                                        </Button>
+                                    ) : null
+                                }
                             </div>
                         )
                     }
