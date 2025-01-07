@@ -14,14 +14,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const { error: userError } = await supabaseClient.auth.getUser();
 
     if (userError) {
-        return withCors(request, new Response(JSON.stringify({
-            error: 'Unable to logout, try again later'
-        }), { status: 500 }), CORS);
+        return withCors(request, new Response('Unauthorized', { status: 401 }), CORS);
     }
 
     if (!cookies.has('sb-access-token') || !cookies.has('sb-refresh-token')) {
         return withCors(request, new Response(JSON.stringify({
-            error: 'Missing cookies. Bad request'
+            error: 'Bad request'
         }), { status: 400 }), CORS);
     }
 
