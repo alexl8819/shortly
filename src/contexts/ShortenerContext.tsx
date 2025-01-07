@@ -5,7 +5,7 @@ import {
     type FC 
 } from 'react';
 
-import { QUERY_LIMIT } from '../lib/constants';
+import { GENERIC_ERROR_MESSAGE, QUERY_LIMIT } from '../lib/constants';
 import { sanitize } from '../lib/common';
 
 const ShortenerContext = createContext<{
@@ -90,14 +90,15 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
             });
         } catch (err) {
             console.error(err);
-            return Object.freeze({ success: false });
+            return Object.freeze({ error: GENERIC_ERROR_MESSAGE });
         }
 
-        if (!linkPatchResponse || !linkPatchResponse.ok) {
-            return Object.freeze({ success: false });
+        if (!linkPatchResponse.ok) {
+            const patchResponseMessage = await linkPatchResponse.json();
+            return Object.freeze({ error: patchResponseMessage.error });
         }
 
-        return Object.freeze({ success: true });
+        return Object.freeze({ error: null });
     }
 
     const removeLink = (shortId: string) => {
@@ -143,16 +144,22 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
             });
         } catch (err) {
             console.error(err);
-            return null;
-        }
-    
-        if (!shortUrlResponse.ok) {
-            console.error(shortUrlResponse.status);
-            return null;
+            return Object.freeze({
+                error: GENERIC_ERROR_MESSAGE
+            });
         }
     
         const shortUrlData = await shortUrlResponse.json();
-        return shortUrlData['url'];
+
+        if (!shortUrlResponse.ok) {
+            return Object.freeze({
+                error: shortUrlData.error
+            });
+        }
+
+        return Object.freeze({
+            shortened: shortUrlData.url
+        });
     }
 
     const setExpiry = (shortId: string, expiry: string) => {

@@ -24,6 +24,10 @@ interface ShortenerProps {
     isLoggedIn: boolean
 }
 
+const notifyError = (errorMessage: string) => toast.error(errorMessage, {
+    role: 'alert'
+});
+
 const notifySuccess = (linkAdded: string) => toast.success(`Shortened URL (${linkAdded}) has been copied to clipboard`, { 
     role: 'alert'
 });
@@ -53,15 +57,14 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
             return;
         }
 
-        const shortened = await createLink(longUrlInput);
+        const { shortened, error } = await createLink(longUrlInput);
 
-        if (!shortened) {
-            throw new Error('Failed to create shortened url');
-        }
-      
-        setLongUrlInput('');
+        if (_window && (_window?.location.pathname.slice(1) === 'dashboard')) {
+            if (error) {
+                notifyError(`Error (${longUrlInput}): ${error}`);
+                return;
+            }
 
-        if (window && (_window?.location.pathname.slice(1) === 'dashboard')) {
             const last = Math.floor(total / QUERY_LIMIT);
 
             if (cursor === last) {
@@ -73,11 +76,18 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
             notifySuccess(shortened);
             await clipboard.write(shortened);
         } else {
+            if (error) {
+                // TODO: either enable toasts on main page or show error elsewhere
+                return;
+            }
+
             setShortenedLinks((prev) => [...prev, {
                 original: longUrlInput,
                 shortened
             }]);
         }
+
+        setLongUrlInput('');
     };
 
     useEffect(() => {
