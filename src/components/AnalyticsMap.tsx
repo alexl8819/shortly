@@ -83,9 +83,13 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
         }
     };
 
-    const handleUrlUpdate = (nUrl: string) => {
-        toast.success(`Successfully updated url to ${nUrl}`);
-        setOriginalUrl(nUrl);
+    const handleUrlUpdate = (newUrl: string, error: string | null = null) => {
+        if (error) {
+            toast.error(`Failed to update url: ${error}`);
+            return;
+        }
+        toast.success(`Successfully updated url to ${newUrl}`);
+        setOriginalUrl(newUrl);
         setEditMode(false);
     }
 
@@ -106,9 +110,8 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
         }
         
         fetchAllAnalytics(id);
-
         window.addEventListener('resize', handleResize);
-        
+
         return () => {
             window.removeEventListener('resize', handleResize);
         };
@@ -206,13 +209,13 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                         isLoading ? (
                             <div className='flex flex-row justify-center h-10 w-1/3'>
                                 <GenericSkeletonItem />
-                            </div>) : isEditMode && analyticDataPoints ? (<LinkEditor url={originalUrl} shortId={analyticDataPoints[0].shortId} onSuccess={handleUrlUpdate} />) : (
-                            <>
-                                <Link className='text-sm font-bold underline underline-offset-2' href={originalUrl}>{ originalUrl }</Link>
+                            </div>) : isEditMode && analyticDataPoints ? (<LinkEditor url={originalUrl} shortId={analyticDataPoints[0].shortId} onFinish={handleUrlUpdate} />) : (
+                            <div className='flex flex-row items-center space-x-2'>
+                                <Link className='text-sm font-bold underline underline-offset-2' href={originalUrl} target='_blank'>{ originalUrl }</Link>
                                 <Button onPress={() => setEditMode(true)} className='lg:ml-3 ml-1'>
                                     <FontAwesomeIcon icon={faPenToSquare} size='1x' />
                                 </Button>
-                            </>
+                            </div>
                         )
                     }
                 </div>

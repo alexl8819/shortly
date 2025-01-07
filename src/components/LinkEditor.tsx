@@ -10,10 +10,10 @@ import { useShortener } from '../contexts/ShortenerContext';
 interface LinkEditorProps {
     url: string,
     shortId: string,
-    onSuccess: Function
+    onFinish: Function
 }
 
-export const LinkEditor: FC<LinkEditorProps> = ({ url, shortId, onSuccess }) => {
+export const LinkEditor: FC<LinkEditorProps> = ({ url, shortId, onFinish }) => {
     const { updateLink } = useShortener();
 
     const [newUrl, setNewUrl] = useState<string>(url);
@@ -31,10 +31,9 @@ export const LinkEditor: FC<LinkEditorProps> = ({ url, shortId, onSuccess }) => 
 
         if (error) {
             setHasError(true);
-            return;
         }
 
-        onSuccess(newUrl);
+        onFinish(newUrl, error);
     };
 
     return (
@@ -58,7 +57,7 @@ export const LinkEditor: FC<LinkEditorProps> = ({ url, shortId, onSuccess }) => 
 LinkEditor.propTypes = {
     url: PropTypes.string.isRequired,
     shortId: PropTypes.string.isRequired,
-    onSuccess: PropTypes.func.isRequired
+    onFinish: PropTypes.func.isRequired
 }
 
 export default LinkEditor;
