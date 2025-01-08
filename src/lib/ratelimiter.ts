@@ -17,7 +17,7 @@ function rateLimit (redisConfig: RedisConfig, slidingWindow: number = 10, maxReq
                 throw new Error('Value must be provided');
             }
 
-            value = `${NAMESPACE}_${createHash('SHA256').update(value).digest('hex')}`;
+            value = `${NAMESPACE}_${import.meta.env.DEV ? 'dev' : 'prod'}_${createHash('SHA256').update(value).digest('hex')}`;
 
             const getCount: string | null = await _redis.get(value);
             const current: number = getCount ? parseInt(getCount) : 0;
