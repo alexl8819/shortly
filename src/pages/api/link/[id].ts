@@ -7,8 +7,9 @@ import decamelizeKeys from "decamelize-keys";
 import dayjs from "dayjs";
 
 import { supabaseClient } from "../../../lib/client";
-import { CLIENT_IP_HEADERS, GENERIC_ERROR_MESSAGE, MINIMUM_MINUTE_DIFF, VALID_URL } from "../../../lib/constants";
-import { type CorsOptions, hasExpired, withCors, sanitize, isURLActive } from "../../../lib/common";
+import { GENERIC_ERROR_MESSAGE, MINIMUM_MINUTE_DIFF, VALID_URL } from "../../../lib/constants";
+import { type CorsOptions, hasExpired, withCors, sanitize, isURLActive, getClientIP } from "../../../lib/common";
+import { ratelimiter } from "../../../lib/ratelimiter";
 
 const IS_PROD = import.meta.env.PROD;
 const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
@@ -25,6 +26,24 @@ export const DELETE: APIRoute = async ({ request, params }) => {
 
     if (userError) {
         return withCors(request, new Response('Unauthorized', { status: 401 }), CORS);
+    }
+
+    const { headers } = request;
+
+    const sourceAddress = getClientIP(headers);
+
+    if (!sourceAddress) {
+        return withCors(request, new Response(JSON.stringify({
+            error: GENERIC_ERROR_MESSAGE
+        }), { status: 500 }), CORS);
+    }
+
+    const shouldBackoff = await ratelimiter.shouldLimit(sourceAddress);
+    
+    if (shouldBackoff) {
+        return withCors(request, new Response(JSON.stringify({
+            error: 'Too many requests'
+        }), { status: 429 }), CORS);
     }
 
     const { id: shortId } = params;
@@ -46,6 +65,24 @@ export const PATCH: APIRoute = async ({ request }) => {
 
     if (userError) {
         return withCors(request, new Response('Unauthorized', { status: 401 }), CORS);
+    }
+
+    const { headers } = request;
+
+    const sourceAddress = getClientIP(headers);
+
+    if (!sourceAddress) {
+        return withCors(request, new Response(JSON.stringify({
+            error: GENERIC_ERROR_MESSAGE
+        }), { status: 500 }), CORS);
+    }
+
+    const shouldBackoff = await ratelimiter.shouldLimit(sourceAddress);
+    
+    if (shouldBackoff) {
+        return withCors(request, new Response(JSON.stringify({
+            error: 'Too many requests'
+        }), { status: 429 }), CORS);
     }
 
     const submitted = await request.json();
@@ -160,6 +197,22 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
         return withCors(request, new Response(null, { status: 401 }), customCors);
     }
 
+    const sourceAddress = getClientIP(headers);
+
+    if (!sourceAddress) {
+        return withCors(request, new Response(JSON.stringify({
+            error: GENERIC_ERROR_MESSAGE
+        }), { status: 500 }), CORS);
+    }
+
+    const shouldBackoff = await ratelimiter.shouldLimit(sourceAddress);
+    
+    if (shouldBackoff) {
+        return withCors(request, new Response(JSON.stringify({
+            error: 'Too many requests'
+        }), { status: 429 }), CORS);
+    }
+
     // TODO: use cache
     const { data, error } = await supabaseClient.from('Links').select('id,original_url,expires_at').eq('short_id', shortId).limit(1);
 
@@ -178,14 +231,6 @@ export const GET: APIRoute = async ({ request, params, redirect }) => {
 
     if (row.expiresAt && hasExpired(row.expiresAt)) {
         return withCors(request, redirect('/404'), customCors);
-    }
-
-    const sourceAddress = CLIENT_IP_HEADERS(headers);
-
-    if (!sourceAddress) {
-        return withCors(request, new Response(JSON.stringify({
-            error: GENERIC_ERROR_MESSAGE
-        }), { status: 500 }), customCors);
     }
     
     const { data: sourceAddressData, error: sourceAddressError } = await supabaseClient.from('Geolocation').select('id').eq('ip_address', sourceAddress);

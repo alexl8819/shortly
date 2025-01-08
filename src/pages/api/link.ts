@@ -4,9 +4,10 @@ import decamelizeKeys from 'decamelize-keys';
 import camelcaseKeys from "camelcase-keys";
 
 import { supabaseClient } from "../../lib/client";
-import { type CorsOptions, isURLActive, withCors } from "../../lib/common";
+import { type CorsOptions, getClientIP, isURLActive, withCors } from "../../lib/common";
 import { GENERIC_ERROR_MESSAGE, QUERY_LIMIT, VALID_URL } from "../../lib/constants";
 import { sanitize } from "../../lib/common";
+import { ratelimiter } from "../../lib/ratelimiter";
 
 const IS_PROD = import.meta.env.PROD;
 const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
@@ -21,6 +22,24 @@ export const GET: APIRoute = async ({ request }) => {
 
     if (userError) {
         return withCors(request, new Response('Unauthorized', { status: 401 }), CORS);
+    }
+
+    const { headers } = request;
+
+    const sourceAddress = getClientIP(headers);
+
+    if (!sourceAddress) {
+        return withCors(request, new Response(JSON.stringify({
+            error: GENERIC_ERROR_MESSAGE
+        }), { status: 500 }), CORS);
+    }
+
+    const shouldBackoff = await ratelimiter.shouldLimit(sourceAddress);
+    
+    if (shouldBackoff) {
+        return withCors(request, new Response(JSON.stringify({
+            error: 'Too many requests'
+        }), { status: 429 }), CORS);
     }
 
     const queryParams = new URL(request.url).searchParams;
@@ -95,6 +114,24 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (userError) {
         return withCors(request, new Response('Unauthorized', { status: 401 }), CORS);
+    }
+
+    const { headers } = request;
+
+    const sourceAddress = getClientIP(headers);
+
+    if (!sourceAddress) {
+        return withCors(request, new Response(JSON.stringify({
+            error: GENERIC_ERROR_MESSAGE
+        }), { status: 500 }), CORS);
+    }
+
+    const shouldBackoff = await ratelimiter.shouldLimit(sourceAddress);
+    
+    if (shouldBackoff) {
+        return withCors(request, new Response(JSON.stringify({
+            error: 'Too many requests'
+        }), { status: 429 }), CORS);
     }
 
     const submitted = await request.json();

@@ -94,3 +94,7 @@ export async function isURLActive (url: string) {
 
     return urlCheckResponse.ok || urlCheckResponse.redirected;
 }
+
+export const getClientIP = (headers: Headers) => import.meta.env.DEV ? '127.0.0.1' : headers.get('x-client-ip') || headers.get('x-forwarded-for')?.split(',')[0] || headers.get('cf-connecting-ip')
+|| headers.get('fastly-client-ip') || headers.get('true-client-ip') || headers.get('x-real-ip') || headers.get('x-cluster-client-ip') || headers.get('appengine-user-ip')
+|| headers.get('x-forwarded') || headers.get('forwarded-for') || headers.get('cf-pseudo-ipv4');

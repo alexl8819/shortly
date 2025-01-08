@@ -1,9 +1,11 @@
 import { type APIRoute } from "astro";
 import camelcaseKeys from "camelcase-keys";
 import dayjs from 'dayjs';
+
 import { supabaseClient } from "../../../lib/client";
-import { type CorsOptions, hasExpired, withCors } from "../../../lib/common";
+import { type CorsOptions, getClientIP, hasExpired, withCors } from "../../../lib/common";
 import { GENERIC_ERROR_MESSAGE } from "../../../lib/constants";
+import { ratelimiter } from "../../../lib/ratelimiter";
 
 const IS_PROD = import.meta.env.PROD;
 const CORS_DOMAIN = import.meta.env.PUBLIC_CORS_DOMAIN;
@@ -18,6 +20,24 @@ export const GET: APIRoute = async ({ request, params }) => {
 
     if (userError) {
         return withCors(request, new Response('Unauthorized', { status: 401 }), CORS);
+    }
+
+    const { headers } = request;
+
+    const sourceAddress = getClientIP(headers);
+
+    if (!sourceAddress) {
+        return withCors(request, new Response(JSON.stringify({
+            error: GENERIC_ERROR_MESSAGE
+        }), { status: 500 }), CORS);
+    }
+
+    const shouldBackoff = await ratelimiter.shouldLimit(sourceAddress);
+    
+    if (shouldBackoff) {
+        return withCors(request, new Response(JSON.stringify({
+            error: 'Too many requests'
+        }), { status: 429 }), CORS);
     }
 
     if (!params.id) {
