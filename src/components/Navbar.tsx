@@ -37,6 +37,10 @@ export const Navbar: FC<NavbarProps> = ({ toggle, isLoggedIn, isOpen, links }) =
             return;
         }
 
+        if (!logoutResponse.ok) {
+            throw new Error('Failed to logout. Are you signed in?');
+        }
+
         window.location.replace('/');
     }
     return (
