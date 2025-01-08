@@ -2,7 +2,8 @@ import {
     createContext, 
     useContext, 
     useState, 
-    type FC 
+    type FC, 
+    type PropsWithChildren
 } from 'react';
 import dayjs, { type ManipulateType } from 'dayjs';
 
@@ -44,10 +45,10 @@ const AnalyticsContext = createContext<{
     automatedVistors: number,
     dateRanges: Array<string> | undefined,
     originalUrl: string,
-    setOriginalUrl: Function,
+    setOriginalUrl: (url: string) => void,
     cursor: number,
-    setCursor: Function,
-    fetchAllAnalytics: Function,
+    setCursor: (cursor: number) => void,
+    fetchAllAnalytics: (id: number) => void,
     isLoading: boolean
 }>({
     analyticDataPoints: [],
@@ -65,7 +66,7 @@ const AnalyticsContext = createContext<{
 
 export const useAnalytics = () => useContext(AnalyticsContext);
 
-export const AnalyticsProvider: FC<any> = ({ children }) => {
+export const AnalyticsProvider: FC<PropsWithChildren> = ({ children }) => {
     const [cursor, setCursor] = useState<number>(0);
     const [total, setTotal] = useState<number>(0);
     const [analyticDataPoints, setAnalyticDataPoints] = useState<Array<AnalyticsDataPoint> | null>(null);
@@ -96,7 +97,7 @@ export const AnalyticsProvider: FC<any> = ({ children }) => {
     
         const { total: totalRows, rows } = await analyticsResponse.json();
 
-        setAnalyticDataPoints(analyticDataPoints ? rows : (_) => [...rows]);
+        setAnalyticDataPoints(analyticDataPoints ? rows : () => [...rows]);
         setTotal(totalRows);
         setOriginalUrl(rows[0].originalUrl);
         
@@ -144,7 +145,7 @@ function _applyFilter (filter: FilterType, data: Array<AnalyticsDataPoint>) {
 
 function _generateDateRange (dataCollection: Array<AnalyticsDataPoint>, tz: string = Intl.DateTimeFormat().resolvedOptions().timeZone) {
     let startDate = null;
-    let endDate = dayjs().tz(tz);
+    const endDate = dayjs().tz(tz);
 
     for (const { createdAt } of dataCollection.values()) {
         const curDate = dayjs(createdAt);

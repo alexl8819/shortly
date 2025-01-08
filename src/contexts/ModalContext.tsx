@@ -2,17 +2,18 @@ import {
     createContext, 
     useContext, 
     useState,
-    type FC 
+    type FC, 
+    type PropsWithChildren
 } from 'react';
 
 const ModalContext = createContext<{
     isOpened: boolean,
-    openModal: Function,
-    closeModal: Function,
+    openModal: () => void,
+    closeModal: (executeFn: boolean) => void,
     selectedItem: string,
-    setSelectedItem: Function,
-    setExecuteFn: Function,
-    setCallbackFn: Function
+    setSelectedItem: (item: string) => void,
+    setExecuteFn: (exec: () => { success: boolean }) => void,
+    setCallbackFn: (callback: () => void) => void
 }>({
     isOpened: false,
     openModal: () => {},
@@ -25,11 +26,11 @@ const ModalContext = createContext<{
 
 export const useModal = () => useContext(ModalContext);
 
-export const ModalProvider: FC<any> = ({ children }) => {
+export const ModalProvider: FC<PropsWithChildren> = ({ children }) => {
     const [isOpened, setOpened] = useState<boolean>(false);
     const [selectedItem, setSelectedItem] = useState<string>('');
-    const [callFn, setCallFn] = useState<Function>();
-    const [finishFn, setFinishFn] = useState<Function>();
+    const [callFn, setCallFn] = useState<() => { success: boolean }>();
+    const [finishFn, setFinishFn] = useState<(success: boolean) => void>();
 
     return (
         <ModalContext.Provider value={{ 

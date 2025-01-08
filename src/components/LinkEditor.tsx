@@ -10,7 +10,7 @@ import { useShortener } from '../contexts/ShortenerContext';
 interface LinkEditorProps {
     url: string,
     shortId: string,
-    onFinish: Function
+    onFinish: (newUrl: string, error: string | null) => void
 }
 
 export const LinkEditor: FC<LinkEditorProps> = ({ url, shortId, onFinish }) => {

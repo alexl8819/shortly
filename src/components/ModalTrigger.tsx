@@ -9,7 +9,7 @@ import { useShortener } from '../contexts/ShortenerContext';
 
 interface ModalDeleteTriggerProps {
     shortId: string,
-    callback: Function
+    callback: (shortId: string, hasSuccess: boolean) => void
 }
 
 export const ModalDeleteTrigger: FC<ModalDeleteTriggerProps> = ({ shortId, callback }) => {
@@ -48,7 +48,7 @@ ModalDeleteTrigger.propTypes = {
 
 interface ModalDatePickerTriggerProps {
     shortId: string,
-    callback: Function
+    callback: (shortId: string, hasSuccess: boolean) => void
 }
 
 export const ModalDatePickerTrigger: FC<ModalDatePickerTriggerProps> = ({ shortId, callback }) => {

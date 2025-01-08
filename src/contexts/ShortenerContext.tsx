@@ -2,22 +2,33 @@ import {
     createContext, 
     useContext, 
     useState,
-    type FC 
+    type FC, 
+    type PropsWithChildren
 } from 'react';
 
 import { GENERIC_ERROR_MESSAGE, QUERY_LIMIT } from '../lib/constants';
 import { sanitize } from '../lib/common';
 
+export interface ActiveLink {
+    id: number,
+    createdAt: string | Date,
+    originalUrl: string,
+    shortId: string,
+    expiresAt: string | Date | null
+    shortUrl: string
+    clicks: number
+}
+
 const ShortenerContext = createContext<{
-    links: Array<any> | null,
+    links: Array<ActiveLink> | null,
     total: number,
     cursor: number,
-    setCursor: Function,
-    fetchAllLinks: Function,
-    createLink: Function,
-    updateLink: Function,
-    removeLink: Function,
-    setExpiry: Function,
+    setCursor: (newCursor: number) => void,
+    fetchAllLinks: () => void,
+    createLink: (originalUrl: string) => void,
+    updateLink: (shortId: string, newUrl: string) => any,
+    removeLink: (shortId: string) => any,
+    setExpiry: (shortId: string, expiry: string) => void,
     hasNew: boolean,
     isLoading: boolean
 }>({
@@ -36,10 +47,10 @@ const ShortenerContext = createContext<{
 
 export const useShortener = () => useContext(ShortenerContext);
 
-export const ShortenerProvider: FC<any> = ({ children }) => {
+export const ShortenerProvider: FC<PropsWithChildren> = ({ children }) => {
     const [cursor, setCursor] = useState<number>(0);
     const [total, setTotal] = useState<number>(0);
-    const [links, setLinks] = useState<Array<any> | null>(null);
+    const [links, setLinks] = useState<Array<ActiveLink> | null>(null);
     const [hasNew, setHasNew] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -65,7 +76,7 @@ export const ShortenerProvider: FC<any> = ({ children }) => {
 
         const { totalRows, rows } = await linkApiResponse.json();
 
-        setLinks(links ? rows : (_) => [...rows]);
+        setLinks(links ? rows : () => [...rows]);
         setTotal((prev) => {
             if (prev > 0 && totalRows > prev) {
                 setHasNew(true);

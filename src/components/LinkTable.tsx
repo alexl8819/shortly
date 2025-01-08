@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLink } from '@fortawesome/free-solid-svg-icons';
 
-import { useShortener } from '../contexts/ShortenerContext';
+import { useShortener, type ActiveLink} from '../contexts/ShortenerContext';
 import { ModalProvider } from '../contexts/ModalContext';
 import { ConfirmModal } from './Modal';
 import { Pagination } from './Pagination';
@@ -14,15 +14,6 @@ import { ModalDeleteTrigger } from './ModalTrigger';
 import { TableSkeleton } from './Skeleton';
 import { QUERY_LIMIT } from '../lib/constants';
 import { hasExpired } from '../lib/common';
-
-interface LinkRow {
-    id: number,
-    originalUrl: string,
-    shortId: string,
-    shortUrl: string,
-    clicks: number,
-    expiresAt: string | Date | null
-}
 
 export default function LinkTable () {
     const { 
@@ -83,14 +74,14 @@ export default function LinkTable () {
 			            </thead>
 			            <tbody>
                             {
-                                links ? links.map((link: LinkRow, index: number) => (
+                                links ? links.map((link: ActiveLink, index: number) => (
                                     <tr key={link.id} className={`${hasNew && (links.length - 1) === index ? 'bg-cyan text-white animate-pulse opacity-75' : ''} text-center text-very-dark-blue hover:text-grayish-violet divide-y divide-gray h-12 cursor-pointer`}>
 				                        <td className='truncate overflow-x-hidden border-t border-gray w-1/2'>
                                             <Link href={`/analytics/${link.id}`}>{ link.originalUrl }</Link>
                                         </td>
 				                        <td 
                                             className={`${link.expiresAt && hasExpired(link.expiresAt) ? 'line-through' : ''}`} 
-                                            onClick={(_) => link.expiresAt && hasExpired(link.expiresAt) ? {} : doCopy(link.shortUrl)}
+                                            onClick={() => link.expiresAt && hasExpired(link.expiresAt) ? {} : doCopy(link.shortUrl)}
                                         >
                                             { link.shortId }
                                         </td>
