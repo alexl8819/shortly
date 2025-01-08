@@ -60,7 +60,7 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
         const { shortened, error } = await createLink(longUrlInput);
 
         if (_window && (_window?.location.pathname.slice(1) === 'dashboard')) {
-            if (error) {
+            if (error || !shortened) {
                 notifyError(`Error (${longUrlInput}): ${error}`);
                 return;
             }
@@ -76,8 +76,7 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
             notifySuccess(shortened);
             await clipboard.write(shortened);
         } else {
-            if (error) {
-                // TODO: either enable toasts on main page or show error elsewhere
+            if (error || !shortened) { // TODO: either enable toasts on main page or show error elsewhere
                 return;
             }
 

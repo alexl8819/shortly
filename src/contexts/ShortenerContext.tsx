@@ -19,16 +19,31 @@ export interface ActiveLink {
     clicks: number
 }
 
+type CreatedLinkResponse = {
+    shortened?: string | null | undefined
+    error?: string | null
+}
+
+type UpdatedLinkResponse = {
+    error: string | null
+}
+
+type DeletedLinkResponse = {
+    success: boolean
+}
+
+export type DelayedExecution<T> = () => Promise<T>;
+
 const ShortenerContext = createContext<{
     links: Array<ActiveLink> | null,
     total: number,
     cursor: number,
     setCursor: (newCursor: number) => void,
     fetchAllLinks: () => void,
-    createLink: (originalUrl: string) => void,
-    updateLink: (shortId: string, newUrl: string) => any,
-    removeLink: (shortId: string) => any,
-    setExpiry: (shortId: string, expiry: string) => void,
+    createLink: (originalUrl: string) => Promise<Readonly<CreatedLinkResponse>>,
+    updateLink: (shortId: string, newUrl: string) => Promise<Readonly<UpdatedLinkResponse>>,
+    removeLink: (shortId: string) => DelayedExecution<DeletedLinkResponse>,
+    setExpiry: (shortId: string, expiry: string) => DelayedExecution<DeletedLinkResponse>,
     hasNew: boolean,
     isLoading: boolean
 }>({
@@ -37,10 +52,19 @@ const ShortenerContext = createContext<{
     cursor: 0,
     setCursor: () => {},
     fetchAllLinks: () => {},
-    createLink: () => {},
-    updateLink: () => {},
-    removeLink: () => {},
-    setExpiry: () => {},
+    createLink: async () => ({
+        shortened: '',
+        error: null,
+    }),
+    updateLink: async () => ({
+        error: null
+    }),
+    removeLink: () => async () => ({
+        success: false
+    }),
+    setExpiry: () => async () => ({
+        success: false
+    }),
     hasNew: false,
     isLoading: false
 });

@@ -32,7 +32,7 @@ export const ConfirmModal: FC<ConfirmModalProps> = ({ title, content }) => {
                         <Button onPress={() => closeModal(true)} className="px-4 py-2 text-very-dark-violet">
                             Yes
                         </Button>
-                        <Button onPress={() => closeModal()} className="px-4 py-2 bg-red text-white rounded-md">
+                        <Button onPress={() => closeModal(false)} className="px-4 py-2 bg-red text-white rounded-md">
                             No
                         </Button>
                     </div>
@@ -68,7 +68,7 @@ export const ChooseDateModal: FC<ChooseDateModalProps> = ({ title, date }) => {
     const handleCancel = () => {
         setReady(false);
 
-        closeModal();
+        closeModal(false);
     }
 
     useEffect(() => {

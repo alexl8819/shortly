@@ -109,7 +109,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
             return;
         }
         
-        fetchAllAnalytics(id);
+        fetchAllAnalytics(parseInt(id));
         window.addEventListener('resize', handleResize);
 
         return () => {

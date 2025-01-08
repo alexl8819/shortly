@@ -5,6 +5,7 @@ import {
     type FC, 
     type PropsWithChildren
 } from 'react';
+// import type { DelayedExecution } from './ShortenerContext';
 
 const ModalContext = createContext<{
     isOpened: boolean,
@@ -12,7 +13,7 @@ const ModalContext = createContext<{
     closeModal: (executeFn: boolean) => void,
     selectedItem: string,
     setSelectedItem: (item: string) => void,
-    setExecuteFn: (exec: () => { success: boolean }) => void,
+    setExecuteFn: (exec: any) => void,
     setCallbackFn: (callback: () => void) => void
 }>({
     isOpened: false,
