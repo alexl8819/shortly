@@ -80,7 +80,7 @@ export function sanitize (str: string) {
     return xss(str);
 }
 
-export async function isURLActive (url: string) {
+export async function isURLActive (url: string, retries: number = 1) {
     let urlCheckResponse;
 
     try {
@@ -89,7 +89,12 @@ export async function isURLActive (url: string) {
         });
     } catch (err) {
         console.error(err);
-        return false;
+
+        if (retries === 0) {
+            return false;
+        }
+
+        return isURLActive(url, retries - 1);
     }
 
     return urlCheckResponse.ok || urlCheckResponse.redirected;
