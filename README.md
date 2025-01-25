@@ -1,5 +1,5 @@
 # shortly
-Basic URL shortner
+Basic URL shortener
 
 ## Implementation
 
