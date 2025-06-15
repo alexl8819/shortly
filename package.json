@@ -29,6 +29,7 @@
     "chart.js": "^4.4.7",
     "clipboardy": "^4.0.0",
     "dayjs": "^1.11.13",
+    "debounce": "^2.2.0",
     "decamelize-keys": "^2.0.1",
     "delay": "^6.0.0",
     "nanoid": "^5.0.8",
