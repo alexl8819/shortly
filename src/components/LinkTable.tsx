@@ -1,13 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-aria-components';
 import clipboard from 'clipboardy';
 import { toast } from 'react-toastify';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLink } from '@fortawesome/free-solid-svg-icons';
 
-import { useShortener, type ActiveLink} from '../contexts/ShortenerContext';
+import { useShortener, type ActiveLink } from '../contexts/ShortenerContext';
 import { ModalProvider } from '../contexts/ModalContext';
-import { ConfirmModal } from './Modal';
 import { Pagination } from './Pagination';
 import { ModalDeleteTrigger } from './ModalTrigger';
 
@@ -25,6 +24,8 @@ export default function LinkTable () {
         isLoading,
         fetchAllLinks
     } = useShortener();
+
+    const [DeleteModalComponent, setDeleteModalComponent] = useState<any>();
 
     if (links && !links.length) {
         return (
@@ -48,6 +49,13 @@ export default function LinkTable () {
             return;
         }
         toast.error(`Failed to remove link (${shortId})`);
+    }
+
+    const prepareModal = async () => {
+        if (!DeleteModalComponent) {
+            const modal = await import('./modals/Confirm');
+            setDeleteModalComponent(() => modal.default);
+        }
     }
     
     useEffect(() => {
@@ -87,7 +95,7 @@ export default function LinkTable () {
                                         </td>
 				                        <td className={link.clicks || (link.expiresAt && hasExpired(link.expiresAt)) ? 'font-bold' : ''}>{ link.clicks }</td>
                                         <td>
-                                            <ModalDeleteTrigger shortId={link.shortId} callback={actionResultCallback} />
+                                            <ModalDeleteTrigger shortId={link.shortId} beforeActivate={prepareModal} callback={actionResultCallback} />
                                         </td>
 			                        </tr>
                                 )) : null
@@ -96,8 +104,8 @@ export default function LinkTable () {
 		            </table>
                 )
             }
+            { DeleteModalComponent ? <DeleteModalComponent title="Are you sure?" content="You are about to delete this short link" /> : null }
             <Pagination curPage={cursor} nextPage={setCursor} total={total} limit={QUERY_LIMIT} />
-            <ConfirmModal title="Are you sure?" content="You are about to delete this short link" />
         </ModalProvider>
     );
 }
