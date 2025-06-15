@@ -7,12 +7,13 @@ import PropTypes from 'prop-types';
 import { useModal } from '../contexts/ModalContext';
 import { useShortener } from '../contexts/ShortenerContext';
 
-interface ModalDeleteTriggerProps {
+interface TriggerProps {
     shortId: string,
+    beforeActivate: () => void,
     callback: (shortId: string, hasSuccess: boolean) => void
 }
 
-export const ModalDeleteTrigger: FC<ModalDeleteTriggerProps> = ({ shortId, callback }) => {
+export const ModalDeleteTrigger: FC<TriggerProps> = ({ shortId, beforeActivate, callback }) => {
     const { 
         isOpened, 
         openModal, 
@@ -26,6 +27,7 @@ export const ModalDeleteTrigger: FC<ModalDeleteTriggerProps> = ({ shortId, callb
     return (
         <Button onPress={() => {
             if (!isOpened) {
+                beforeActivate();
                 setSelectedItem(shortId);
                 setExecuteFn(() => removeLink(shortId));
                 setCallbackFn(() => {
@@ -46,17 +48,13 @@ ModalDeleteTrigger.propTypes = {
     callback: PropTypes.func.isRequired
 }
 
-interface ModalDatePickerTriggerProps {
-    shortId: string,
-    callback: (shortId: string, hasSuccess: boolean) => void
-}
-
-export const ModalDatePickerTrigger: FC<ModalDatePickerTriggerProps> = ({ shortId, callback }) => {
+export const ModalDatePickerTrigger: FC<TriggerProps> = ({ shortId, beforeActivate, callback }) => {
     const { isOpened, openModal, setSelectedItem, setCallbackFn } = useModal();
 
     return (
         <Button onPress={() => {
             if (!isOpened) {
+                beforeActivate();
                 setSelectedItem(shortId);
                 setCallbackFn(() => {
                     return function (hasSuccess: boolean) {
