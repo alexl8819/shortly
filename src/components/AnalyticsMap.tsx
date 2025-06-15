@@ -13,6 +13,7 @@ import {
   } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import dayjs from 'dayjs';
+import debounce from 'debounce';
 import * as utcPlugin from 'dayjs/plugin/utc';
 import * as timezonePlugin from 'dayjs/plugin/timezone';
 import * as relativePlugin from 'dayjs/plugin/relativeTime';
@@ -35,7 +36,6 @@ import { ChartSkeleton, GenericSkeletonItem, ListSkeleton } from './Skeleton';
 
 import { ModalProvider } from '../contexts/ModalContext';
 import { ModalDatePickerTrigger } from './ModalTrigger';
-import { ChooseDateModal } from './Modal';
 
 ChartJS.register(
     CategoryScale,
@@ -74,6 +74,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
     } = useAnalytics();
 
     const [isEditMode, setEditMode] = useState<boolean>(false);
+    const [ChooseDateModalComponent, setChooseDateModalComponent] = useState<any>();
 
     const chartRef = useRef(null);
 
@@ -103,17 +104,25 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
         }
         toast.error(`Failed to set expiration date for (${shortId})`);
     }
+
+    const handleModalCreation = async () => {
+        if (!ChooseDateModalComponent) {
+            const modal = await import('./modals/ChooseDateTime');
+            setChooseDateModalComponent(() => modal.default);
+        }
+    }
     
     useEffect(() => {
         if (!id || cursor <= -1) {
             return;
         }
         
+        const debouncedResize = debounce(handleResize, 1000);
+        window.addEventListener('resize', debouncedResize);
         fetchAllAnalytics(parseInt(id));
-        window.addEventListener('resize', handleResize);
 
         return () => {
-            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('resize', debouncedResize);
         };
     }, [cursor]);
 
@@ -161,7 +170,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                                         </div>
                                     </div>
                                 )
-                            ) : (<ModalDatePickerTrigger shortId={analyticDataPoints[0].shortId} callback={handleExpirationUpdate} />)
+                            ) : (<ModalDatePickerTrigger shortId={analyticDataPoints[0].shortId} beforeActivate={handleModalCreation} callback={handleExpirationUpdate} />)
                         ) : (
                             <div className='flex flex-row justify-center items-center h-10 w-40'>
                                 <GenericSkeletonItem />
@@ -266,7 +275,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                         )) : <ListSkeleton rows={5} />
                     }
                 </ul>
-                <ChooseDateModal title='Choose an expiration date' date={dayjs().toDate()} />
+                { ChooseDateModalComponent ? <ChooseDateModalComponent title='Choose an expiration date' date={dayjs().toDate()} /> : null }
                 <Pagination total={totalVistors} curPage={cursor} nextPage={(page: number) => setCursor(page)} />
             </div>
         </ModalProvider>
