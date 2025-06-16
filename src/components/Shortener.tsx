@@ -7,10 +7,12 @@ import {
     Input 
 } from 'react-aria-components';
 import { toast } from 'react-toastify';
+import { useForm } from 'react-hook-form';
 import delay from 'delay';
+import debounce from 'debounce';
 import clipboard from 'clipboardy';
 import PropTypes from 'prop-types';
-import { useEffect, useState, type FormEvent, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 
 import { useShortener } from '../contexts/ShortenerContext';
 import { QUERY_LIMIT, VALID_URL } from '../lib/constants';
@@ -41,53 +43,72 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
         isLoading
     } = useShortener();
 
-    const [longUrlInput, setLongUrlInput] = useState<string>('');
+    const {
+		register,
+		handleSubmit,
+		reset,
+        getValues,
+		setError,
+		formState: { errors },
+	} = useForm();
+
+    const [submitted, setSubmitted] = useState<boolean>(false);
     const [shortenedLinks, setShortenedLinks] = useState<Array<ShortenedUrl>>([]);
     const [_window, setWindow] = useState<Window | null>(null);
 
-    const queueLink = async (e: FormEvent) => {
-        e.preventDefault();
-
-        if (!longUrlInput.length || !VALID_URL.test(longUrlInput)) {
-            return;
-        }
-
+    const queueLink = handleSubmit(debounce(({ link }) => {
         if (!isLoggedIn) {
             _window?.location.replace('/login');
             return;
         }
 
-        const { shortened, error } = await createLink(longUrlInput);
-
-        if (_window && (_window?.location.pathname.slice(1) === 'dashboard')) {
-            if (error || !shortened) {
-                notifyError(`Error (${longUrlInput}): ${error}`);
-                return;
-            }
-
-            const last = Math.floor(total / QUERY_LIMIT);
-
-            if (cursor === last) {
-                setCursor(-1);
-            }
-            
-            await delay(500);
-            setCursor(last);
-            notifySuccess(shortened);
-            await clipboard.write(shortened);
-        } else {
-            if (error || !shortened) { // TODO: either enable toasts on main page or show error elsewhere
-                return;
-            }
-
-            setShortenedLinks((prev) => [...prev, {
-                original: longUrlInput,
-                shortened
-            }]);
+        if (!link.length || !VALID_URL.test(link)) {
+            setError('link', { type: 'string', message: 'URL is not valid'}, { shouldFocus: true });
+            return;
         }
 
-        setLongUrlInput('');
-    };
+        if (submitted) {
+            return;
+        }
+
+        setSubmitted(true);
+    }, 1000, { immediate: true }));
+
+    useEffect(() => {
+        const submitLink = async () => {
+            const link = getValues('link');
+
+            const { shortened, error } = await createLink(link);
+
+            if (error || !shortened) {
+                notifyError(`Error (${link}): ${error}`);
+                setSubmitted(false);
+            } else if (_window && (_window?.location.pathname.slice(1) === 'dashboard')) {
+                const last = Math.floor(total / QUERY_LIMIT);
+
+                if (cursor === last) {
+                    setCursor(-1);
+                }
+            
+                await delay(500);
+                setCursor(last);
+                notifySuccess(shortened);
+                await clipboard.write(shortened);
+            } else {
+                setShortenedLinks((prev) => [...prev, {
+                    original: link,
+                    shortened
+                }]);
+            }
+
+            reset();
+            setSubmitted(false);
+        }
+
+        if (submitted) {
+            submitLink();
+        }
+    }, [submitted]);
 
     useEffect(() => {
         if (window) {
@@ -101,19 +122,15 @@ export const ShortenerWidget: FC<ShortenerProps> = ({ isLoggedIn }) => {
                 <TextField className='w-full' isRequired>
                     <Label htmlFor='link' className='sr-only'>Enter URL to shorten</Label>
                     <Input 
-                        type='url' 
-                        id='link-create-input' 
-                        name='link-create-input' 
-                        className={`rounded py-3 px-6 w-full ${longUrlInput.length > 0 ? 'invalid:border-2 invalid:border-red': 'border-none'}`}
-                        value={longUrlInput}
+                        type='url'
+                        className={`rounded py-3 px-6 w-full ${errors.link ? 'invalid:border-2 invalid:border-red' : 'border-none'}`}
                         placeholder='Shorten a link here...'
-                        onChange={({ target }) => setLongUrlInput(target.value)}
                         disabled={_window !== null && (_window?.location.pathname.slice(1) === 'dashboard') && isLoading}
+                        {...register('link', { required: true })} 
                     />
+                    
                     <FieldError className='mt-[0.25rem] font-medium text-[0.75rem] tracking-[0.005em] leading-[1.125rem] text-red italic'>
-                        {
-                            ({validationDetails}) => (longUrlInput.length > 0 && (validationDetails.valueMissing || !validationDetails.valid) ? 'Please enter a valid URL' : '')
-                        }
+                        { (errors.link && errors.link.message as string) || 'Please enter a valid URL' }
                     </FieldError>
                 </TextField>
                 <Button 

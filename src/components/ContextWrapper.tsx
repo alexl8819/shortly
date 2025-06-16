@@ -29,6 +29,7 @@ export const ShortenerPreviewContextWrapper: FC<ShortenerPreviewContextWrapperPr
     return (
         <ShortenerProvider>
             <ShortenerWidget isLoggedIn={isLoggedIn} />
+            <ToastContainer autoClose={3000} transition={Zoom} />
         </ShortenerProvider>
     )
 }
