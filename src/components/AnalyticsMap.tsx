@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type FC } from 'react';
+import { useState, useEffect, useRef, memo, type FC } from 'react';
 import { Breadcrumb, Breadcrumbs, Button, Link } from 'react-aria-components';
 import {
     Chart as ChartJS,
@@ -276,17 +276,11 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                     }
                 </ul>
                 { ChooseDateModalComponent ? <ChooseDateModalComponent title='Choose an expiration date' date={dayjs().toDate()} /> : null }
-                <Pagination total={totalVistors} curPage={cursor} nextPage={(page: number) => setCursor(page)} limit={QUERY_LIMIT} />
+                { totalVistors > 0 ? <Pagination total={totalVistors} curPage={cursor} nextPage={(page: number) => setCursor(page)} limit={QUERY_LIMIT} /> : null }
             </div>
         </ModalProvider>
     );
 };
-
-AnalyticsMap.propTypes = {
-    id: PropTypes.string.isRequired
-}
-
-export default AnalyticsMap;
 
 function _intersectDates (dateRanges: Array<string>, dataCollection: Array<AnalyticsDataPoint>) {
     const data: number[] = Array.from({ length: dateRanges.length });
@@ -302,3 +296,9 @@ function _intersectDates (dateRanges: Array<string>, dataCollection: Array<Analy
 
     return data;
 }
+
+AnalyticsMap.propTypes = {
+    id: PropTypes.string.isRequired
+};
+
+export default memo(AnalyticsMap);
