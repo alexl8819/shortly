@@ -31,7 +31,7 @@ import delay from 'delay';
 import Pagination from './Pagination';
 import LinkEditor from './LinkEditor';
 import { useAnalytics, type AnalyticsDataPoint } from '../contexts/AnalyticsContext';
-import { CHART_OPTIONS } from '../lib/constants';
+import { CHART_OPTIONS, QUERY_LIMIT } from '../lib/constants';
 import { ChartSkeleton, GenericSkeletonItem, ListSkeleton } from './Skeleton';
 
 import { ModalProvider } from '../contexts/ModalContext';
@@ -276,7 +276,7 @@ export const AnalyticsMap: FC<AnalyticsMapProps> = ({ id }) => {
                     }
                 </ul>
                 { ChooseDateModalComponent ? <ChooseDateModalComponent title='Choose an expiration date' date={dayjs().toDate()} /> : null }
-                <Pagination total={totalVistors} curPage={cursor} nextPage={(page: number) => setCursor(page)} />
+                <Pagination total={totalVistors} curPage={cursor} nextPage={(page: number) => setCursor(page)} limit={QUERY_LIMIT} />
             </div>
         </ModalProvider>
     );
