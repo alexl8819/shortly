@@ -35,7 +35,7 @@ type DeletedLinkResponse = {
 export type DelayedExecution<T> = () => Promise<T>;
 
 const ShortenerContext = createContext<{
-    links: Array<ActiveLink> | null,
+    links: Array<ActiveLink>,
     total: number,
     cursor: number,
     setCursor: (newCursor: number) => void,
@@ -74,7 +74,7 @@ export const useShortener = () => useContext(ShortenerContext);
 export const ShortenerProvider: FC<PropsWithChildren> = ({ children }) => {
     const [cursor, setCursor] = useState<number>(0);
     const [total, setTotal] = useState<number>(0);
-    const [links, setLinks] = useState<Array<ActiveLink> | null>(null);
+    const [links, setLinks] = useState<Array<ActiveLink>>([]);
     const [hasNew, setHasNew] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -88,13 +88,15 @@ export const ShortenerProvider: FC<PropsWithChildren> = ({ children }) => {
         let linkApiResponse;
 
         try {
-            linkApiResponse = await fetch(`/api/link?limit=${QUERY_LIMIT}&index=${getOffset(cursor)}`);
+            linkApiResponse = await fetch(`/api/link?limit=${QUERY_LIMIT}&index=${getOffset(cursor <= 0 ? 0 : cursor - 1)}`);
         } catch (err) {
             console.error(err);
+            setIsLoading(false);
             return;
         }
 
         if (linkApiResponse && !linkApiResponse.ok) {
+            setIsLoading(false);
             return;
         }
 
@@ -105,7 +107,7 @@ export const ShortenerProvider: FC<PropsWithChildren> = ({ children }) => {
             if (prev > 0 && totalRows > prev) {
                 setHasNew(true);
             }
-            return totalRows;
+            return totalRows || 0;
         });
 
         setIsLoading(false);
@@ -158,7 +160,6 @@ export const ShortenerProvider: FC<PropsWithChildren> = ({ children }) => {
 
             if (links.length <= 1) {
                 setCursor(cursor - 1);
-                return Object.freeze({ success: true });
             }
 
             setLinks(links.filter((link) => link.shortId !== shortId));
