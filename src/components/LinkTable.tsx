@@ -11,8 +11,8 @@ import { Pagination } from './Pagination';
 import { ModalDeleteTrigger } from './ModalTrigger';
 
 import { TableSkeleton } from './Skeleton';
-import { QUERY_LIMIT } from '../lib/constants';
 import { hasExpired } from '../lib/common';
+import { QUERY_LIMIT } from '../lib/constants';
 
 export default function LinkTable () {
     const { 
@@ -26,15 +26,6 @@ export default function LinkTable () {
     } = useShortener();
 
     const [DeleteModalComponent, setDeleteModalComponent] = useState<any>();
-
-    if (links && !links.length) {
-        return (
-            <div className='py-3 flex flex-col justify-center items-center w-full'>
-                <FontAwesomeIcon icon={faLink} size="6x" style={{color: 'hsl(0, 0%, 75%)'}} />
-                <h2 className='mt-6 text-center lg:text-[3.5rem] text-[2.625rem] font-bold tracking-[-0.066em] text-very-dark-blue'>No links found.</h2>
-            </div>
-        );
-    }
 
     const doCopy = async (shortIdLink: string) => {
         toast.info(`Copied ${shortIdLink} to clipboard`, {
@@ -57,7 +48,7 @@ export default function LinkTable () {
             setDeleteModalComponent(() => modal.default);
         }
     }
-    
+
     useEffect(() => {
         if (cursor < 0) {
             return;
@@ -65,6 +56,15 @@ export default function LinkTable () {
 
         fetchAllLinks();
     }, [cursor]);
+
+    if (!isLoading && links && !links.length) {
+        return (
+            <div className='py-3 flex flex-col justify-center items-center w-full'>
+                <FontAwesomeIcon icon={faLink} size="6x" style={{color: 'hsl(0, 0%, 75%)'}} />
+                <h2 className='mt-6 text-center lg:text-[3.5rem] text-[2.625rem] font-bold tracking-[-0.066em] text-very-dark-blue'>No links found.</h2>
+            </div>
+        );
+    }
 
     return (
         <ModalProvider>
